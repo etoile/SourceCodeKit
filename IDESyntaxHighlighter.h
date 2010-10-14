@@ -1,6 +1,8 @@
 #include <Foundation/NSObject.h>
 #include <Foundation/NSGeometry.h>
+#ifdef IDEKIT_INTERNAL
 #include <clang-c/Index.h>
+#endif
 
 @class NSMutableArray;
 @class NSMutableAttributedString;
@@ -23,12 +25,14 @@
  * example, when generating semantic HTML from a source file.
  */
 @interface IDESyntaxHighlighter : NSObject
+#ifdef IDEKIT_INTERNAL
 {
 	CXIndex index;
 	NSMutableArray *args;
 	CXFile file;
 	CXTranslationUnit translationUnit;
 }
+#endif
 /**
  * Text storage object representing the source file.
  */
@@ -45,7 +49,7 @@
 /**
  * Perform lexical highlighting on a specified source range.
  */
-- (void)highlightRange: (CXSourceRange)r syntax: (BOOL)highightSyntax;
+//- (void)highlightRange: (CXSourceRange)r syntax: (BOOL)highightSyntax;
 /**
  * Performs lexical highlighting on the entire file.
  */

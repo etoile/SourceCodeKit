@@ -19,7 +19,7 @@ ${FRAMEWORK_NAME}_HEADER_FILES = \
 	IDETextTypes.h
 
 ${FRAMEWORK_NAME}_OBJCFLAGS = -fobjc-nonfragile-abi
-${FRAMEWORK_NAME}_CPPFLAGS = -I`llvm-config --src-root`/tools/clang/include/
+${FRAMEWORK_NAME}_CPPFLAGS = -I`llvm-config --src-root`/tools/clang/include/ -DIDEKIT_INTERNAL
 ${FRAMEWORK_NAME}_LDFLAGS = -L`llvm-config --libdir` -lclang
 
 CC=clang
