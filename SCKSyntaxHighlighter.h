@@ -1,6 +1,6 @@
 #include <Foundation/NSObject.h>
 #include <Foundation/NSGeometry.h>
-#ifdef IDEKIT_INTERNAL
+#ifdef SCKKIT_INTERNAL
 #include <clang-c/Index.h>
 #endif
 
@@ -8,7 +8,7 @@
 @class NSMutableAttributedString;
 
 /**
- * The IDESyntaxHighlighter class is responsible for performing lexical and
+ * The SCKSyntaxHighlighter class is responsible for performing lexical and
  * syntax highlighting on a single source file.  Highlighting involves three steps:
  *
  * 1) Lexical markup.
@@ -24,8 +24,8 @@
  * ignore it and handle the presentation yourself.  This is useful, for
  * example, when generating semantic HTML from a source file.
  */
-@interface IDESyntaxHighlighter : NSObject
-#ifdef IDEKIT_INTERNAL
+@interface SCKSyntaxHighlighter : NSObject
+#ifdef SCKKIT_INTERNAL
 {
 	CXIndex index;
 	NSMutableArray *args;
@@ -47,17 +47,17 @@
  */
 - (void)reparse;
 /**
- * Perform lexical highlighting on a specified source range.
- */
-//- (void)highlightRange: (CXSourceRange)r syntax: (BOOL)highightSyntax;
-/**
  * Performs lexical highlighting on the entire file.
  */
 - (void)lexicalHighlightFile;
 /**
- * Perform syntax highlighting on the file.
+ * Perform syntax highlighting on the whole file.
  */
 - (void)syntaxHighlightFile;
+/**
+ * Performs syntax highlighting on the specified range.
+ */
+- (void)syntaxHighlightRange: (NSRange)r;
 /**
  * Convert the semantic markup into presentation markup in the attributed
  * string.

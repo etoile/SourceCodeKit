@@ -1,7 +1,10 @@
-#import "IDESyntaxHighlighter.h"
+#import "SCKSyntaxHighlighter.h"
 #import <Cocoa/Cocoa.h>
 #import <EtoileFoundation/EtoileFoundation.h>
-#import "IDETextTypes.h"
+#import "SCKTextTypes.h"
+#include <time.h>
+
+#define NSLog(...)
 
 /**
  * Converts a clang source range into an NSRange within its enclosing file.
@@ -18,8 +21,14 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 	return r;
 }
 
+@interface SCKSyntaxHighlighter ()
+/**
+ * Perform lexical highlighting on a specified source range.
+ */
+- (void)highlightRange: (CXSourceRange)r syntax: (BOOL)highightSyntax;
+@end
 
-@implementation IDESyntaxHighlighter
+@implementation SCKSyntaxHighlighter
 - (id)init
 {
 	SUPERINIT;
@@ -46,6 +55,13 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 - (void)addIncludePath: (NSString*)includePath
 {
 	[args addObject: [NSString stringWithFormat: @"-I%@", includePath]];
+	// After we've added an include path, we may change how the file is parsed,
+	// so parse it again, if required
+	if (NULL != translationUnit)
+	{
+		clang_disposeTranslationUnit(translationUnit);
+		[self reparse];
+	}
 }
 
 - (void)dealloc
@@ -63,8 +79,11 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 	const char *fn = [fileName UTF8String];
 	struct CXUnsavedFile unsaved = { 
 		fn, [[source string] UTF8String], [source length] };
+	//NSLog(@"File is %d chars long", [source length]);
+	file = NULL;
 	if (NULL == translationUnit)
 	{
+		//NSLog(@"Creating translation unit from file");
 		unsigned argc = [args count];
 		const char *argv[argc];
 		int i=0;
@@ -73,36 +92,51 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 			argv[i++] = [arg UTF8String];
 		}
 		translationUnit = 
-			//clang_createTranslationUnitFromSourceFile(index, fn, argc, argv, 1, &unsaved);
 			clang_createTranslationUnitFromSourceFile(index, fn, argc, argv, 1, &unsaved);
+			//clang_parseTranslationUnit(index, fn, argv, argc, &unsaved, 1, CXTranslationUnit_PrecompiledPreamble | CXTranslationUnit_CacheCompletionResults | CXTranslationUnit_DetailedPreprocessingRecord);
 		file = clang_getFile(translationUnit, fn);
-		[self syntaxHighlightFile];
-		[self convertSemanticToPresentationMarkup];
 	}
 	else
 	{
-		clang_reparseTranslationUnit(translationUnit, 1, &unsaved, 0);
+		clock_t c1 = clock();
+		//NSLog(@"Reparsing translation unit");
+		if (0 != clang_reparseTranslationUnit(translationUnit, 1, &unsaved, clang_defaultReparseOptions(translationUnit)))
+		{
+			NSLog(@"Reparsing failed");
+			clang_disposeTranslationUnit(translationUnit);
+			translationUnit = 0;
+		}
+		else
+		{
+			file = clang_getFile(translationUnit, fn);
+		}
+		clock_t c2 = clock();
+		NSLog(@"Reparsing took %f seconds.  .",
+			((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+
 	}
 }
 - (void)lexicalHighlightFile
 {
-	CXSourceLocation start = clang_getLocation(translationUnit, file, 0, 0);
-	CXSourceLocation end = clang_getLocation(translationUnit, file, -1, -1);
+	CXSourceLocation start = clang_getLocation(translationUnit, file, 1, 1);
+	CXSourceLocation end = clang_getLocationForOffset(translationUnit, file, [source length]);
 	[self highlightRange: clang_getRange(start, end) syntax: NO];
 }
 
 - (void)highlightRange: (CXSourceRange)r syntax: (BOOL)highightSyntax;
 {
-	NSString *TokenTypes[] = {IDETextTokenTypePunctuation, IDETextTokenTypeKeyword,
-		IDETextTokenTypeIdentifier, IDETextTokenTypeLiteral,
-		IDETextTokenTypeComment};
+	NSString *TokenTypes[] = {SCKTextTokenTypePunctuation, SCKTextTokenTypeKeyword,
+		SCKTextTokenTypeIdentifier, SCKTextTokenTypeLiteral,
+		SCKTextTokenTypeComment};
 	if (clang_equalLocations(clang_getRangeStart(r), clang_getRangeEnd(r)))
 	{
+		NSLog(@"Range has no length!");
 		return;
 	}
 	CXToken *tokens;
 	unsigned tokenCount;
 	clang_tokenize(translationUnit, r , &tokens, &tokenCount);
+	//NSLog(@"Found %d tokens", tokenCount);
 	if (tokenCount > 0)
 	{
 		CXCursor *cursors = NULL;
@@ -129,37 +163,37 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 				switch (cursors[i].kind)
 				{
 					case CXCursor_FirstRef... CXCursor_LastRef:
-						type = IDETextTypeReference;
+						type = SCKTextTypeReference;
 						break;
 					case CXCursor_MacroDefinition:
-						type = IDETextTypeMacroDefinition;
+						type = SCKTextTypeMacroDefinition;
 						break;
 					case CXCursor_MacroInstantiation:
-						type = IDETextTypeMacroInstantiation;
+						type = SCKTextTypeMacroInstantiation;
 						break;
 					case CXCursor_FirstDecl...CXCursor_LastDecl:
-						type = IDETextTypeDeclaration;
+						type = SCKTextTypeDeclaration;
 						break;
 					case CXCursor_ObjCMessageExpr:
-						type = IDETextTypeMessageSend;
+						type = SCKTextTypeMessageSend;
 						break;
 					case CXCursor_DeclRefExpr:
-						type = IDETextTypeDeclRef;
+						type = SCKTextTypeDeclRef;
 						break;
 					case CXCursor_PreprocessingDirective:
-						type = IDETextTypePreprocessorDirective;
+						type = SCKTextTypePreprocessorDirective;
 						break;
 					default:
 						type = nil;
 				}
 				if (nil != type)
 				{
-					[source addAttribute: kIDETextSemanticType
+					[source addAttribute: kSCKTextSemanticType
 								   value: type
 								   range: range];
 				}
 			}
-			[source addAttribute: kIDETextTokenType
+			[source addAttribute: kSCKTextTokenType
 			               value: TokenTypes[clang_getTokenKind(tokens[i])]
 			               range: range];
 		}
@@ -169,6 +203,7 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 }
 - (void)convertSemanticToPresentationMarkup
 {
+	clock_t c1 = clock();
 	NSUInteger end = [source length];
 	NSUInteger i = 0;
 	NSRange r;
@@ -177,38 +212,41 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 	NSDictionary *keyword = D([NSColor redColor], NSForegroundColorAttributeName);
 	NSDictionary *literal = D([NSColor redColor], NSForegroundColorAttributeName);
 	NSDictionary *tokenAttributes = D(
-			comment, IDETextTokenTypeComment,
-			noAttributes, IDETextTokenTypePunctuation,
-			keyword, IDETextTokenTypeKeyword,
-			literal, IDETextTokenTypeLiteral);
+			comment, SCKTextTokenTypeComment,
+			noAttributes, SCKTextTokenTypePunctuation,
+			keyword, SCKTextTokenTypeKeyword,
+			literal, SCKTextTokenTypeLiteral);
 
 	NSDictionary *semanticAttributes = D(
-			D([NSColor blueColor], NSForegroundColorAttributeName), IDETextTypeDeclRef,
-			D([NSColor brownColor], NSForegroundColorAttributeName), IDETextTypeMessageSend,
-			//D([NSColor greenColor], NSForegroundColorAttributeName), IDETextTypeDeclaration,
-			D([NSColor magentaColor], NSForegroundColorAttributeName), IDETextTypeMacroInstantiation,
-			D([NSColor magentaColor], NSForegroundColorAttributeName), IDETextTypeMacroDefinition,
-			D([NSColor orangeColor], NSForegroundColorAttributeName), IDETextTypePreprocessorDirective,
-			D([NSColor purpleColor], NSForegroundColorAttributeName), IDETextTypeReference);
+			D([NSColor blueColor], NSForegroundColorAttributeName), SCKTextTypeDeclRef,
+			D([NSColor brownColor], NSForegroundColorAttributeName), SCKTextTypeMessageSend,
+			//D([NSColor greenColor], NSForegroundColorAttributeName), SCKTextTypeDeclaration,
+			D([NSColor magentaColor], NSForegroundColorAttributeName), SCKTextTypeMacroInstantiation,
+			D([NSColor magentaColor], NSForegroundColorAttributeName), SCKTextTypeMacroDefinition,
+			D([NSColor orangeColor], NSForegroundColorAttributeName), SCKTextTypePreprocessorDirective,
+			D([NSColor purpleColor], NSForegroundColorAttributeName), SCKTextTypeReference);
 
 	do
 	{
 		NSDictionary *attrs = [source attributesAtIndex: i
 		                          longestEffectiveRange: &r
 		                                        inRange: NSMakeRange(i, end-i)];
-		NSString *token = [attrs objectForKey: kIDETextTokenType];
-		NSString *semantic = [attrs objectForKey: kIDETextSemanticType];
-		if (semantic == IDETextTypePreprocessorDirective)
+		i = r.location + r.length;
+		NSString *token = [attrs objectForKey: kSCKTextTokenType];
+		NSString *semantic = [attrs objectForKey: kSCKTextSemanticType];
+		// Skip ranges that have attributes other than semantic markup
+		if ((nil == semantic) && (nil == token)) continue;
+		if (semantic == SCKTextTypePreprocessorDirective)
 		{
 			attrs = [semanticAttributes objectForKey: semantic];
 		}
-		else if (token == nil || token != IDETextTokenTypeIdentifier)
+		else if (token == nil || token != SCKTextTokenTypeIdentifier)
 		{
 			attrs = [tokenAttributes objectForKey: token];
 		}
 		else 
 		{
-			NSString *semantic = [attrs objectForKey: kIDETextSemanticType];
+			NSString *semantic = [attrs objectForKey: kSCKTextSemanticType];
 			attrs = [semanticAttributes objectForKey: semantic];
 			//NSLog(@"Applying semantic attributes: %@", semantic);
 		}
@@ -218,14 +256,24 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 		}
 		[source setAttributes: attrs
 		                range: r];
-		i = r.location + r.length;
 	} while (i < end);
+	clock_t c2 = clock();
+	NSLog(@"Generating presentation markup took %f seconds.  .",
+		((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+}
+- (void)syntaxHighlightRange: (NSRange)r
+{
+	CXSourceLocation start = clang_getLocationForOffset(translationUnit, file, r.location);
+	CXSourceLocation end = clang_getLocationForOffset(translationUnit, file, r.location + r.length);
+	clock_t c1 = clock();
+	[self highlightRange: clang_getRange(start, end) syntax: YES];
+	clock_t c2 = clock();
+	NSLog(@"Highlighting took %f seconds.  .",
+		((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 }
 - (void)syntaxHighlightFile
 {
-	CXSourceLocation start = clang_getLocation(translationUnit, file, 0, 0);
-	CXSourceLocation end = clang_getLocation(translationUnit, file, -1, -1);
-	[self highlightRange: clang_getRange(start, end) syntax: YES];
+	[self syntaxHighlightRange: NSMakeRange(0, [source length])];
 }
 @end
 
