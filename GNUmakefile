@@ -11,10 +11,16 @@ VERSION = 0.1
 FRAMEWORK_NAME = SourceCodeKit
 
 ${FRAMEWORK_NAME}_OBJC_FILES = \
+	SCKClangSourceFile.m\
+	SCKSourceCollection.m\
+	SCKSourceFile.m\
 	SCKSyntaxHighlighter.m\
 	SCKTextTypes.m
 
 ${FRAMEWORK_NAME}_HEADER_FILES = \
+	SourceCodeKit.h\
+	SCKSourceCollection.h\
+	SCKSourceFile.h\
 	SCKSyntaxHighlighter.h\
 	SCKTextTypes.h
 
