@@ -59,3 +59,18 @@ EMIT_STRING(SCKTextTypeDeclRef);
  * A preprocessor directive, such as #import or #include.
  */
 EMIT_STRING(SCKTextTypePreprocessorDirective);
+/**
+ * Something is wrong with the text for this range.  The value for this
+ * attribute is a dictionary describing exactly what.
+ */
+EMIT_STRING(kSCKDiagnostic);
+/**
+ * The severity of the diagnostic.  An NSNumber from 1 (hint) to 5 (fatal
+ * error).
+ */
+EMIT_STRING(kSCKDiagnosticSeverity);
+/**
+ * A human-readable string giving the text of the diagnostic, suitable for
+ * display.
+ */
+EMIT_STRING(kSCKDiagnosticText);

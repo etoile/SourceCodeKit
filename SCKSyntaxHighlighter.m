@@ -56,6 +56,7 @@ static NSDictionary *noAttributes;
 		i = r.location + r.length;
 		NSString *token = [attrs objectForKey: kSCKTextTokenType];
 		NSString *semantic = [attrs objectForKey: kSCKTextSemanticType];
+		NSDictionary *diagnostic = [attrs objectForKey: kSCKDiagnostic];
 		// Skip ranges that have attributes other than semantic markup
 		if ((nil == semantic) && (nil == token)) continue;
 		if (semantic == SCKTextTypePreprocessorDirective)
@@ -78,6 +79,16 @@ static NSDictionary *noAttributes;
 		}
 		[source setAttributes: attrs
 		                range: r];
+		// Re-apply the diagnostic
+		if (nil != diagnostic)
+		{
+			[source addAttribute: NSToolTipAttributeName
+			               value: [diagnostic objectForKey: kSCKDiagnosticText]
+			               range: r];
+			[source addAttribute: NSBackgroundColorAttributeName
+			               value: [NSColor redColor]
+			               range: r];
+		}
 	} while (i < end);
 	clock_t c2 = clock();
 	NSLog(@"Generating presentation markup took %f seconds.  .",

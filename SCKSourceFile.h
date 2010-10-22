@@ -57,4 +57,9 @@
  * Adds an include path to search when performing syntax highlighting.
  */
 - (void)addIncludePath: (NSString*)includePath;
+/**
+ * Checks for errors and adds kSCKDiagnostic attributes to ranges in the source
+ * attributed string which contain them.
+ */
+- (void)collectDiagnostics;
 @end

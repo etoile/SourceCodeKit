@@ -20,5 +20,6 @@
 - (void)syntaxHighlightFile {}
 - (void)syntaxHighlightRange: (NSRange)r {}
 - (void)addIncludePath: (NSString*)includePath {}
+- (void)collectDiagnostics {}
 @end
 
