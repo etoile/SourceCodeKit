@@ -51,6 +51,7 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 		@"-fexceptions",
 		@"-Wall",
 		@"-fgnu-runtime",
+		@"-fblocks",
 		@"-fconstant-string-class=NSConstantString") mutableCopy];
 	return self;
 }
@@ -221,8 +222,8 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 	clock_t c1 = clock();
 	[self highlightRange: clang_getRange(start, end) syntax: YES];
 	clock_t c2 = clock();
-	NSLog(@"Highlighting took %f seconds.  .",
-		((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+	//NSLog(@"Highlighting took %f seconds.  .",
+		//((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 }
 - (void)syntaxHighlightFile
 {
