@@ -12,6 +12,7 @@ FRAMEWORK_NAME = SourceCodeKit
 
 ${FRAMEWORK_NAME}_OBJC_FILES = \
 	SCKClangSourceFile.m\
+	SCKIntrospection.m\
 	SCKSourceCollection.m\
 	SCKSourceFile.m\
 	SCKSyntaxHighlighter.m\
@@ -19,14 +20,15 @@ ${FRAMEWORK_NAME}_OBJC_FILES = \
 
 ${FRAMEWORK_NAME}_HEADER_FILES = \
 	SourceCodeKit.h\
+	SCKIntrospection.h\
 	SCKSourceCollection.h\
 	SCKSourceFile.h\
 	SCKSyntaxHighlighter.h\
 	SCKTextTypes.h
 
-${FRAMEWORK_NAME}_OBJCFLAGS = -fobjc-nonfragile-abi
+${FRAMEWORK_NAME}_OBJCFLAGS = -fobjc-nonfragile-abi -fblocks
 ${FRAMEWORK_NAME}_CPPFLAGS = -I`llvm-config --src-root`/tools/clang/include/ -DSCKKIT_INTERNAL
-${FRAMEWORK_NAME}_LDFLAGS = -L`llvm-config --libdir` -lclang
+${FRAMEWORK_NAME}_LDFLAGS = -L`llvm-config --libdir` -lclang -lstdc++
 
 CC=clang
 

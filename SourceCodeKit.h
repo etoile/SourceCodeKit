@@ -2,3 +2,4 @@
 #import "SCKSourceFile.h"
 #import "SCKSyntaxHighlighter.h"
 #import "SCKTextTypes.h"
+#import "SCKIntrospection.h"

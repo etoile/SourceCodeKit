@@ -1,7 +1,7 @@
 #import "SCKClangSourceFile.h"
+#import "SourceCodeKit.h"
 #import <Cocoa/Cocoa.h>
 #import <EtoileFoundation/EtoileFoundation.h>
-#import "SCKTextTypes.h"
 #include <time.h>
 
 //#define NSLog(...)
@@ -25,11 +25,51 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 	return r;
 }
 
+static void freestring(CXString *str)
+{
+	clang_disposeString(*str);
+}
+#define SCOPED_STR(name, value)\
+	__attribute__((unused))\
+	__attribute__((cleanup(freestring))) CXString name ## str = value;\
+	const char *name = clang_getCString(name ## str);
+
+
+@interface SCKSourceLocation : NSObject
+{
+	@public
+	NSString *file;
+	NSUInteger offset;
+}
+@end
+@implementation SCKSourceLocation
+- (id)initWithClangSourceLocation: (CXSourceLocation)l
+{
+	SUPERINIT;
+	CXFile f;
+	clang_getInstantiationLocation(l, &f, 0, 0, &offset); 
+	SCOPED_STR(fileName, clang_getFileName(f));
+	file = [[NSString alloc] initWithUTF8String: fileName];
+	return self;
+}
+- (NSString*)description
+{
+	return [NSString stringWithFormat: @"%@:%d", file, (int)offset];
+}
+- (void)dealloc
+{
+	[file release];
+	[super dealloc];
+}
+@end
+
+
 @interface SCKClangIndex : NSObject
 @property (readonly) CXIndex clangIndex;
 //FIXME: We should have different default arguments for C, C++ and ObjC.
 @property (retain, nonatomic) NSMutableArray *defaultArguments;
 @end
+
 @implementation SCKClangIndex
 - (id)init
 {
@@ -55,12 +95,136 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 		@"-fconstant-string-class=NSConstantString") mutableCopy];
 	return self;
 }
+- (void)dealloc
+{
+	clang_disposeIndex(clangIndex);
+	[defaultArguments release];
+	[super dealloc];
+}
 @end
 @interface SCKClangSourceFile ()
 - (void)highlightRange: (CXSourceRange)r syntax: (BOOL)highightSyntax;
 @end
 
 @implementation SCKClangSourceFile
+
+static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
+{
+	if (CXCursor_ObjCClassRef == cursor.kind)
+	{
+		NSString **strPtr = (NSString**)client_data;
+		SCOPED_STR(name, clang_getCursorSpelling(cursor));
+		*strPtr = [NSString stringWithUTF8String: name];
+		return CXChildVisit_Break;
+	}
+	return CXChildVisit_Continue;
+}
+
+static NSString *classNameFromCategory(CXCursor category)
+{
+	__block NSString *className = nil;
+	clang_visitChildrenWithBlock(category, 
+		^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
+		{
+			if (CXCursor_ObjCClassRef == cursor.kind)
+			{
+				SCOPED_STR(name, clang_getCursorSpelling(cursor));
+				className = [NSString stringWithUTF8String: name];
+				return CXChildVisit_Break;
+			}
+			return CXChildVisit_Continue;
+		} );
+	return className;
+}
+
+- (void)setLocation: (SCKSourceLocation*)aLocation
+          forMethod: (NSString*)methodName
+            inClass: (NSString*)className
+           category: (NSString*)categoryName
+       isDefinition: (BOOL)isDefinition
+{
+	SCKSourceCollection *collection = self.collection;
+	SCKClass *cls = [collection.classes objectForKey: className];
+	if (nil == cls)
+	{
+		cls = [SCKClass new];
+		cls.name = className;
+		[collection.classes setObject: cls forKey: className];
+		[cls release];
+	}
+	NSMutableDictionary *methods = cls.methods;
+	if (nil != categoryName)
+	{
+		SCKCategory *cat = [cls.categories objectForKey: categoryName];
+		if (nil == cat)
+		{
+			cat = [SCKCategory new];
+			cat.name = categoryName;
+			cat.parent = cls;
+			[cls.categories setObject: cat forKey: categoryName];
+			[cat release];
+		}
+		methods = cat.methods;
+	}
+	SCKMethod *m = [methods objectForKey: methodName];
+	if (isDefinition)
+	{
+		m.definition = aLocation;
+	}
+	else
+	{
+		m.declaration = aLocation;
+	}
+}
+
+- (void)rebuildIndex
+{
+	clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit), 
+		^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
+		{
+			switch(cursor.kind)
+			{
+				default: break;
+				case CXCursor_ObjCInstanceMethodDecl:
+				{
+					if (CXCursor_ObjCImplementationDecl == parent.kind)
+					{
+						SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
+						SCOPED_STR(className, clang_getCursorSpelling(parent));
+						//clang_visitChildren((parent), findClass, NULL);
+						SCKSourceLocation *l = [[SCKSourceLocation alloc] 
+							initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+						[self setLocation: l
+						        forMethod: [NSString stringWithUTF8String: methodName]
+						          inClass: [NSString stringWithUTF8String: className]
+						         category: nil
+						     isDefinition: clang_isCursorDefinition(cursor)];
+						[l release];
+					}
+					else if (CXCursor_ObjCCategoryImplDecl == parent.kind)
+					{
+						SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
+						SCOPED_STR(categoryName, clang_getCursorSpelling(parent));
+						NSString *className = classNameFromCategory(parent);
+						SCKSourceLocation *l = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+						[self setLocation: l
+						        forMethod: [NSString stringWithUTF8String: methodName]
+						          inClass: className
+						         category: [NSString stringWithUTF8String: categoryName]
+						     isDefinition: clang_isCursorDefinition(cursor)];
+						[l release];
+					}
+				}
+			}
+			if (0) //(cursor.kind == CXCursor_ObjCInstanceMethodDecl)
+			{
+			NSLog(@"Found definition of %s %s in %s %s\n", 
+					clang_getCString(clang_getCursorKindSpelling(cursor.kind)), clang_getCString(clang_getCursorUSR(cursor)),
+					clang_getCString(clang_getCursorKindSpelling(parent.kind)), clang_getCString(clang_getCursorUSR(parent)));
+			}
+			return CXChildVisit_Recurse;
+		});
+}
 - (id)initUsingIndex: (SCKIndex*)anIndex
 {
 	idx = (SCKClangIndex*)anIndex;
@@ -129,6 +293,7 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 		//NSLog(@"Reparsing took %f seconds.  .",
 			//((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 	}
+	[self rebuildIndex];
 }
 - (void)lexicalHighlightFile
 {

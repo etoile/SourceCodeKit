@@ -4,6 +4,7 @@
 @class SCKIndex;
 @class NSMutableArray;
 @class NSMutableAttributedString;
+@class SCKSourceCollection;
 
 /**
  * The SCKSyntaxHighlighter class is responsible for performing lexical and
@@ -35,6 +36,10 @@
  * Name of this source file.
  */
 @property (retain, nonatomic) NSString *fileName;
+/**
+ * The source collection containing this file.
+ */
+@property (nonatomic, assign) SCKSourceCollection *collection;
 + (SCKSourceFile*)fileUsingIndex: (SCKIndex*)anIndex;
 /**
  * Parses the contents of the file.  Must be called before reapplying
