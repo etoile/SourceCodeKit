@@ -216,13 +216,13 @@ static NSString *classNameFromCategory(CXCursor category)
 					}
 				}
 			}
-			if (0) //(cursor.kind == CXCursor_ObjCInstanceMethodDecl)
+			if (0)//(cursor.kind == CXCursor_ObjCInstanceMethodDecl)
 			{
 			NSLog(@"Found definition of %s %s in %s %s\n", 
 					clang_getCString(clang_getCursorKindSpelling(cursor.kind)), clang_getCString(clang_getCursorUSR(cursor)),
 					clang_getCString(clang_getCursorKindSpelling(parent.kind)), clang_getCString(clang_getCursorUSR(parent)));
 			}
-			return CXChildVisit_Recurse;
+			return CXChildVisit_Continue;//CXChildVisit_Recurse;
 		});
 }
 - (id)initUsingIndex: (SCKIndex*)anIndex
