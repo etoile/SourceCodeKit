@@ -2,7 +2,7 @@
 #import <EtoileFoundation/EtoileFoundation.h>
 
 @implementation SCKProgramComponent
-@synthesize parent;
+@synthesize parent, declaration, definition, documentation, name;
 - (void)dealloc
 {
 	[name release];
@@ -18,6 +18,7 @@
 @end
 
 @implementation SCKBundle
+@synthesize classes, functions;
 - (void)dealloc
 {
 	[classes release];
@@ -33,7 +34,7 @@
 }
 - (NSString*)description
 {
-	NSMutableString *str = [[name mutableCopy] autorelease];
+	NSMutableString *str = [[self.name mutableCopy] autorelease];
 	for (id function in functions)
 	{
 		[str appendFormat: @"\n\t%@", function];
@@ -47,6 +48,7 @@
 @end
 
 @implementation SCKClass
+@synthesize subclasses, superclass, categories, methods, ivars;
 - (void)dealloc
 {
 	[subclasses release];
@@ -57,7 +59,7 @@
 }
 - (NSString*)description
 {
-	NSMutableString *str = [[name mutableCopy] autorelease];
+	NSMutableString *str = [[self.name mutableCopy] autorelease];
 	for (id ivar in ivars)
 	{
 		[str appendFormat: @"\n\t\t%@", ivar];
@@ -110,12 +112,13 @@
 	{
 		free(methodList);
 	}
-	name = [[NSString alloc] initWithUTF8String: class_getName(cls)];
+	self.name = [[NSString alloc] initWithUTF8String: class_getName(cls)];
 	return self;
 }
 @end
 
 @implementation SCKCategory : SCKProgramComponent
+@synthesize methods;
 - (id)init
 {
 	SUPERINIT;
@@ -129,7 +132,7 @@
 }
 - (NSString*)description
 {
-	NSMutableString *str = [NSMutableString stringWithFormat: @"%@ (%@)", parent.name, name];
+	NSMutableString *str = [NSMutableString stringWithFormat: @"%@ (%@)", self.parent.name, self.name];
 	for (id method in methods)
 	{
 		[str appendFormat: @"\n\t%@", method];
@@ -139,18 +142,15 @@
 @end
 
 @implementation SCKMethod
-- (void)dealloc
-{
-	[type release];
-	[super dealloc];
-}
+@synthesize isClassMethod;
 - (NSString*)description
 {
-	return [NSString stringWithFormat: @"%c%@", isClassMethod ? '+' : '-', name];
+	return [NSString stringWithFormat: @"%c%@", isClassMethod ? '+' : '-', self.name];
 }
 @end
 
-@implementation SCKIvar
+@implementation SCKTypedProgramComponent
+@synthesize type;
 - (void)dealloc
 {
 	[type release];
@@ -158,4 +158,6 @@
 }
 @end
 
+@implementation SCKIvar @end
 @implementation SCKFunction @end
+@implementation SCKGlobal @end

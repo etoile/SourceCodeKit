@@ -7,6 +7,7 @@
 static NSDictionary *noAttributes;
 
 @implementation SCKSyntaxHighlighter
+@synthesize tokenAttributes, semanticAttributes;
 + (void)initialize
 {
 	noAttributes = [NSDictionary dictionary];

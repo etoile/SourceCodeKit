@@ -71,6 +71,7 @@ static void freestring(CXString *str)
 @end
 
 @implementation SCKClangIndex
+@synthesize clangIndex, defaultArguments;
 - (id)init
 {
 	SUPERINIT;
@@ -176,6 +177,37 @@ static NSString *classNameFromCategory(CXCursor category)
 		m.declaration = aLocation;
 	}
 }
+- (void)setLocation: (SCKSourceLocation*)l
+          forGlobal: (const char*)name
+           withType: (const char*)type
+         isFunction: (BOOL)isFunction
+       isDefinition: (BOOL)isDefinition
+{
+	SCKSourceCollection *collection = self.collection;
+	NSMutableDictionary *dict = isFunction ? collection.functions : collection.globals;
+	NSString *symbol = [NSString stringWithUTF8String: name];
+
+	SCKTypedProgramComponent *global = [dict objectForKey: symbol];
+	STACK_SCOPED SCKTypedProgramComponent *g = nil;
+	if (nil == global)
+	{
+		g = isFunction ? [SCKFunction new] : [SCKGlobal new];
+		global = g;
+		global.name = symbol;
+		global.type = [NSString stringWithUTF8String: type];
+	}
+	if (isDefinition)
+	{
+		global.definition = l;
+	}
+	else
+	{
+		global.declaration = l;
+	}
+	NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, global.type, isDefinition ? @"defined" : @"declared", l);
+
+	[dict setObject: global forKey: symbol];
+}
 
 - (void)rebuildIndex
 {
@@ -185,44 +217,73 @@ static NSString *classNameFromCategory(CXCursor category)
 			switch(cursor.kind)
 			{
 				default: break;
-				case CXCursor_ObjCInstanceMethodDecl:
+				case CXCursor_ObjCImplementationDecl:
+					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit), 
+						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
+						{
+							if (CXCursor_ObjCInstanceMethodDecl == cursor.kind)
+							{
+								SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
+								SCOPED_STR(className, clang_getCursorSpelling(parent));
+								//clang_visitChildren((parent), findClass, NULL);
+								SCKSourceLocation *l = [[SCKSourceLocation alloc] 
+									initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+								[self setLocation: l
+								        forMethod: [NSString stringWithUTF8String: methodName]
+								          inClass: [NSString stringWithUTF8String: className]
+								         category: nil
+								     isDefinition: clang_isCursorDefinition(cursor)];
+								[l release];
+							}
+							return CXChildVisit_Continue;
+						});
+					break;
+				case CXCursor_ObjCCategoryImplDecl:
+					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit), 
+						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
+					{
+						if (CXCursor_ObjCInstanceMethodDecl == cursor.kind)
+						{
+							SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
+							SCOPED_STR(categoryName, clang_getCursorSpelling(parent));
+							NSString *className = classNameFromCategory(parent);
+							SCKSourceLocation *l = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+							[self setLocation: l
+							        forMethod: [NSString stringWithUTF8String: methodName]
+							          inClass: className
+							         category: [NSString stringWithUTF8String: categoryName]
+							     isDefinition: clang_isCursorDefinition(cursor)];
+							[l release];
+						}
+						return CXChildVisit_Continue;
+					});
+					break;
+				case CXCursor_FunctionDecl:
+				case CXCursor_VarDecl:
 				{
-					if (CXCursor_ObjCImplementationDecl == parent.kind)
+					if (clang_getCursorLinkage(cursor) == CXLinkage_External)
 					{
-						SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
-						SCOPED_STR(className, clang_getCursorSpelling(parent));
-						//clang_visitChildren((parent), findClass, NULL);
-						SCKSourceLocation *l = [[SCKSourceLocation alloc] 
-							initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+						SCOPED_STR(name, clang_getCursorSpelling(cursor));
+						SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
+						STACK_SCOPED SCKSourceLocation *l = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
 						[self setLocation: l
-						        forMethod: [NSString stringWithUTF8String: methodName]
-						          inClass: [NSString stringWithUTF8String: className]
-						         category: nil
+						        forGlobal: name
+						         withType: type
+						       isFunction: (cursor.kind == CXCursor_FunctionDecl)
 						     isDefinition: clang_isCursorDefinition(cursor)];
-						[l release];
 					}
-					else if (CXCursor_ObjCCategoryImplDecl == parent.kind)
-					{
-						SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
-						SCOPED_STR(categoryName, clang_getCursorSpelling(parent));
-						NSString *className = classNameFromCategory(parent);
-						SCKSourceLocation *l = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
-						[self setLocation: l
-						        forMethod: [NSString stringWithUTF8String: methodName]
-						          inClass: className
-						         category: [NSString stringWithUTF8String: categoryName]
-						     isDefinition: clang_isCursorDefinition(cursor)];
-						[l release];
+					break;
 					}
-				}
 			}
 			if (0)//(cursor.kind == CXCursor_ObjCInstanceMethodDecl)
 			{
-			NSLog(@"Found definition of %s %s in %s %s\n", 
+				const char *type = clang_getCString(clang_getDeclObjCTypeEncoding(cursor));
+			NSLog(@"Found definition of %s %s in %s %s (%s)\n", 
 					clang_getCString(clang_getCursorKindSpelling(cursor.kind)), clang_getCString(clang_getCursorUSR(cursor)),
-					clang_getCString(clang_getCursorKindSpelling(parent.kind)), clang_getCString(clang_getCursorUSR(parent)));
+					clang_getCString(clang_getCursorKindSpelling(parent.kind)), clang_getCString(clang_getCursorUSR(parent)), type);
 			}
-			return CXChildVisit_Continue;//CXChildVisit_Recurse;
+			//return CXChildVisit_Continue;//CXChildVisit_Recurse;
+			return CXChildVisit_Continue;
 		});
 }
 - (id)initUsingIndex: (SCKIndex*)anIndex

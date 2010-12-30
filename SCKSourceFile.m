@@ -6,6 +6,7 @@
 
 
 @implementation SCKSourceFile
+@synthesize fileName, source, collection;
 - (id)initUsingIndex: (SCKIndex*)anIndex
 {
 	[self release];
