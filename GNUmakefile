@@ -31,6 +31,8 @@ ${FRAMEWORK_NAME}_CPPFLAGS = -I`llvm-config --src-root`/tools/clang/include/ -DS
 ${FRAMEWORK_NAME}_LDFLAGS = -L`llvm-config --libdir` -lclang -lstdc++
 
 CC=clang
+CFLAGS += -load=/home/theraven/llvm/Debug+Asserts/lib/libGNUObjCRuntime.so -gnu-objc
+
 
 include $(GNUSTEP_MAKEFILES)/framework.make
 -include ../../etoile.make

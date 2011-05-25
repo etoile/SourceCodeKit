@@ -75,11 +75,13 @@ static void freestring(CXString *str)
 - (id)init
 {
 	SUPERINIT;
+	NSLog(@"Creating index");
 	clangIndex = clang_createIndex(1, 1);
 	// Options required to compile GNUstep apps
 	// FIXME: These should be read in from a plist or something equally
 	// (approximately) sensible.
 	defaultArguments = [A(
+		@"-xobjective-c",
 		@"-DGNUSTEP",
 		@"-DGNUSTEP_BASE_LIBRARY=1",
 		@"-DGNU_GUI_LIBRARY=1",
@@ -93,6 +95,8 @@ static void freestring(CXString *str)
 		@"-Wall",
 		@"-fgnu-runtime",
 		@"-fblocks",
+		// FIXME: Find the GNUstep header path more sensibly.
+		@"-I/Local/Library/Headers",
 		@"-fconstant-string-class=NSConstantString") mutableCopy];
 	return self;
 }
@@ -204,7 +208,8 @@ static NSString *classNameFromCategory(CXCursor category)
 	{
 		global.declaration = l;
 	}
-	NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, global.type, isDefinition ? @"defined" : @"declared", l);
+	
+	//NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, global.type, isDefinition ? @"defined" : @"declared", l);
 
 	[dict setObject: global forKey: symbol];
 }
@@ -282,7 +287,7 @@ static NSString *classNameFromCategory(CXCursor category)
 					clang_getCString(clang_getCursorKindSpelling(cursor.kind)), clang_getCString(clang_getCursorUSR(cursor)),
 					clang_getCString(clang_getCursorKindSpelling(parent.kind)), clang_getCString(clang_getCursorUSR(parent)), type);
 			}
-			//return CXChildVisit_Continue;//CXChildVisit_Recurse;
+			//return CXChildVisit_Recurse;
 			return CXChildVisit_Continue;
 		});
 }
@@ -318,13 +323,15 @@ static NSString *classNameFromCategory(CXCursor category)
 - (void)reparse
 {
 	const char *fn = [fileName UTF8String];
-	struct CXUnsavedFile unsaved = { 
-		fn, [[source string] UTF8String], [source length] };
+	struct CXUnsavedFile unsaved[] = { 
+		{fn, [[source string] UTF8String], [source length]},
+		{NULL, NULL, 0}};
 	//NSLog(@"File is %d chars long", [source length]);
 	file = NULL;
 	if (NULL == translationUnit)
 	{
 		//NSLog(@"Creating translation unit from file");
+		const char *mainFile = fn;
 		unsigned argc = [args count];
 		const char *argv[argc];
 		int i=0;
@@ -332,16 +339,30 @@ static NSString *classNameFromCategory(CXCursor category)
 		{
 			argv[i++] = [arg UTF8String];
 		}
+		int unsavedCount = 1;
+		if ([@"h" isEqualToString: [fileName pathExtension]])
+		{
+			unsaved[1].Filename = "/tmp/foo.m";
+			unsaved[1].Contents = [[NSString stringWithFormat: @"#import \"%@\"\n", fileName] UTF8String];
+			unsaved[1].Length = strlen(unsaved[1].Contents);
+			mainFile = unsaved[1].Filename;
+			unsavedCount = 2;
+		}
 		translationUnit = 
-			clang_createTranslationUnitFromSourceFile(idx.clangIndex, fn, argc, argv, 1, &unsaved);
-			//clang_parseTranslationUnit(index, fn, argv, argc, &unsaved, 1, CXTranslationUnit_PrecompiledPreamble | CXTranslationUnit_CacheCompletionResults | CXTranslationUnit_DetailedPreprocessingRecord);
+			clang_createTranslationUnitFromSourceFile(idx.clangIndex, fn, argc, argv, 0, unsaved);
+		/*
+			clang_parseTranslationUnit(idx.clangIndex, mainFile, argv, argc, unsaved,
+					unsavedCount,
+					clang_defaultEditingTranslationUnitOptions());
+					//CXTranslationUnit_Incomplete);
+					*/
 		file = clang_getFile(translationUnit, fn);
 	}
 	else
 	{
 		clock_t c1 = clock();
-		//NSLog(@"Reparsing translation unit");
-		if (0 != clang_reparseTranslationUnit(translationUnit, 1, &unsaved, clang_defaultReparseOptions(translationUnit)))
+		NSLog(@"Reparsing translation unit");
+		if (0 != clang_reparseTranslationUnit(translationUnit, 1, unsaved, clang_defaultReparseOptions(translationUnit)))
 		{
 			clang_disposeTranslationUnit(translationUnit);
 			translationUnit = 0;
