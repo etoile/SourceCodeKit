@@ -100,6 +100,11 @@ static void freestring(CXString *str)
 		@"-fconstant-string-class=NSConstantString") mutableCopy];
 	return self;
 }
+- (void)finalize
+{
+	NSLog(@"Disposking of clang thingy");
+	clang_disposeIndex(clangIndex);
+}
 - (void)dealloc
 {
 	clang_disposeIndex(clangIndex);

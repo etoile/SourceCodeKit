@@ -102,7 +102,7 @@
 	Method *methodList = class_copyMethodList(cls, &count);
 	for (unsigned int i=0 ; i<count ; i++)
 	{
-		STACK_SCOPED SCKMethod *method = [SCKIvar new];
+		STACK_SCOPED SCKMethod *method = [SCKMethod new];
 		method.name = [NSString stringWithUTF8String: sel_getName(method_getName(methodList[i]))];
 		method.type = [NSString stringWithUTF8String: method_getTypeEncoding(methodList[i])];
 		method.parent = self;
