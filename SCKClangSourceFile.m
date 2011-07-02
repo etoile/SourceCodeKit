@@ -118,6 +118,7 @@ static void freestring(CXString *str)
 
 @implementation SCKClangSourceFile
 
+/*
 static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
 {
 	if (CXCursor_ObjCClassRef == cursor.kind)
@@ -129,6 +130,7 @@ static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXCli
 	}
 	return CXChildVisit_Continue;
 }
+*/
 
 static NSString *classNameFromCategory(CXCursor category)
 {

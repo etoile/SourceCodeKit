@@ -1,6 +1,8 @@
 #import "SourceCodeKit.h"
 #import <EtoileFoundation/EtoileFoundation.h>
 
+@interface SCKSourceLocation : NSObject @end
+
 @implementation SCKProgramComponent
 @synthesize parent, declaration, definition, documentation, name;
 - (void)dealloc
