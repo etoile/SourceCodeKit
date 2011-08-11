@@ -92,7 +92,7 @@
 	{
 		STACK_SCOPED SCKIvar *ivar = [SCKIvar new];
 		ivar.name = [NSString stringWithUTF8String: ivar_getName(ivarList[i])];
-		ivar.type = [NSString stringWithUTF8String: ivar_getTypeEncoding(ivarList[i])];
+		[ivar setTypeEncoding: [NSString stringWithUTF8String: ivar_getTypeEncoding(ivarList[i])]];
 		ivar.parent = self;
 		[ivars addObject: ivar];
 	}
@@ -106,7 +106,7 @@
 	{
 		STACK_SCOPED SCKMethod *method = [SCKMethod new];
 		method.name = [NSString stringWithUTF8String: sel_getName(method_getName(methodList[i]))];
-		method.type = [NSString stringWithUTF8String: method_getTypeEncoding(methodList[i])];
+		[method setTypeEncoding: [NSString stringWithUTF8String: method_getTypeEncoding(methodList[i])]];
 		method.parent = self;
 		[methods setObject: method forKey: method.name];
 	}
@@ -152,10 +152,10 @@
 @end
 
 @implementation SCKTypedProgramComponent
-@synthesize type;
+@synthesize typeEncoding;
 - (void)dealloc
 {
-	[type release];
+	[typeEncoding release];
 	[super dealloc];
 }
 @end

@@ -75,7 +75,6 @@ static void freestring(CXString *str)
 - (id)init
 {
 	SUPERINIT;
-	NSLog(@"Creating index");
 	clangIndex = clang_createIndex(1, 1);
 	// Options required to compile GNUstep apps
 	// FIXME: These should be read in from a plist or something equally
@@ -205,7 +204,7 @@ static NSString *classNameFromCategory(CXCursor category)
 		g = isFunction ? [SCKFunction new] : [SCKGlobal new];
 		global = g;
 		global.name = symbol;
-		global.type = [NSString stringWithUTF8String: type];
+		[global setTypeEncoding: [NSString stringWithUTF8String: type]];
 	}
 	if (isDefinition)
 	{
@@ -216,7 +215,7 @@ static NSString *classNameFromCategory(CXCursor category)
 		global.declaration = l;
 	}
 	
-	//NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, global.type, isDefinition ? @"defined" : @"declared", l);
+	NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, [global typeEncoding], isDefinition ? @"defined" : @"declared", l);
 
 	[dict setObject: global forKey: symbol];
 }
@@ -285,7 +284,7 @@ static NSString *classNameFromCategory(CXCursor category)
 						     isDefinition: clang_isCursorDefinition(cursor)];
 					}
 					break;
-					}
+				}
 			}
 			if (0)//(cursor.kind == CXCursor_ObjCInstanceMethodDecl)
 			{

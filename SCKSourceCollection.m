@@ -75,7 +75,7 @@ static NSDictionary *fileClasses;
 	file = [[fileClasses objectForKey: extension] fileUsingIndex: [indexes objectForKey: extension]];
 	file.fileName = aPath;
 	file.collection = self;
-	//[file reparse];
+	[file reparse];
 	if (nil == file)
 	{
 		NSLog(@"Failed to load %@", aPath);

@@ -44,7 +44,7 @@
  */
 @interface SCKTypedProgramComponent : SCKProgramComponent
 /** Objective-C type encoding of the component. */
-@property (nonatomic, retain) NSString *type;
+@property (nonatomic, retain) NSString *typeEncoding;
 @end
 
 @interface SCKBundle : SCKProgramComponent
