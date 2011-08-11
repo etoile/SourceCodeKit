@@ -215,7 +215,7 @@ static NSString *classNameFromCategory(CXCursor category)
 		global.declaration = l;
 	}
 	
-	NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, [global typeEncoding], isDefinition ? @"defined" : @"declared", l);
+	//NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, [global typeEncoding], isDefinition ? @"defined" : @"declared", l);
 
 	[dict setObject: global forKey: symbol];
 }
