@@ -97,6 +97,7 @@ static void freestring(CXString *str)
 		@"-fgnu-runtime",
 		@"-fblocks",
 		// FIXME: Find the GNUstep header path more sensibly.
+		@"-I/usr/local/include",
 		@"-I/Local/Library/Headers",
 		@"-fconstant-string-class=NSConstantString") mutableCopy];
 	return self;
