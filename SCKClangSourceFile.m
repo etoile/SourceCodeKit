@@ -47,7 +47,9 @@ static void freestring(CXString *str)
 {
 	SUPERINIT;
 	CXFile f;
-	clang_getInstantiationLocation(l, &f, 0, 0, &offset); 
+	unsigned o;
+	clang_getInstantiationLocation(l, &f, 0, 0, &o); 
+	offset = o;
 	SCOPED_STR(fileName, clang_getFileName(f));
 	file = [[NSString alloc] initWithUTF8String: fileName];
 	return self;
