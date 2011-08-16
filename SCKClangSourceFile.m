@@ -14,8 +14,8 @@ NSRange NSRangeFromCXSourceRange(CXSourceRange sr)
 	unsigned start, end;
 	CXSourceLocation s = clang_getRangeStart(sr);
 	CXSourceLocation e = clang_getRangeEnd(sr);
-	clang_getInstantiationLocation(s, 0, 0, 0, &start); 
-	clang_getInstantiationLocation(e, 0, 0, 0, &end); 
+	clang_getInstantiationLocation(s, 0, 0, 0, &start);
+	clang_getInstantiationLocation(e, 0, 0, 0, &end);
 	if (end < start)
 	{
 		NSRange r = {end, start-end};
@@ -48,7 +48,7 @@ static void freestring(CXString *str)
 	SUPERINIT;
 	CXFile f;
 	unsigned o;
-	clang_getInstantiationLocation(l, &f, 0, 0, &o); 
+	clang_getInstantiationLocation(l, &f, 0, 0, &o);
 	offset = o;
 	SCOPED_STR(fileName, clang_getFileName(f));
 	file = [[NSString alloc] initWithUTF8String: fileName];
@@ -65,12 +65,107 @@ static void freestring(CXString *str)
 }
 @end
 
+#ifdef GNUSTEP
+
+/*
+ * GNUstep has a few private methods in NSBundle that let you determine the
+ * correct include path in a non-flattened filesystem setup. We need to expose
+ * it here.
+ */
+@interface NSBundle (ExposeGNUstepInternals)
++ (NSString*)_gnustep_target_dir;
++ (NSString*)_library_combo;
+@end
+
+/**
+ * Read the relevant environment variables and construct an array of -I
+ * directives that the compiler should search for GNUstep headers.
+ *
+ * FIXME: This might not actually work with Windows style path-separators ('\').
+ */
+NSArray *GNUstepIncludeDirectories()
+{
+	NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+	NSString *pathList = [environment objectForKey: @"GNUSTEP_PATHLIST"];
+	NSInteger length = [pathList length];
+	if (0 == length)
+	{
+		return nil;
+	}
+
+	BOOL isFlattened = [[environment objectForKey: @"GNUSTEP_IS_FLATTENED"] boolValue];
+	NSMutableArray *accumulator = [NSMutableArray array];
+	NSScanner *scanner = [NSScanner scannerWithString: pathList];
+	[scanner setCharactersToBeSkipped: [NSCharacterSet newlineCharacterSet]];
+	NSCharacterSet *stopSet = [NSCharacterSet characterSetWithCharactersInString: @":\\"];
+	NSMutableString *thisPath = [NSMutableString string];
+	NSAutoreleasePool *arp = [NSAutoreleasePool new];
+	while (NO == [scanner isAtEnd])
+	{
+		NSString *nextPart = nil;
+		BOOL foundPath = [scanner scanUpToCharactersFromSet: stopSet
+		                                           intoString: &nextPart];
+		if (foundPath)
+		{
+			[thisPath appendString: nextPart];
+		}
+		NSInteger location = [scanner scanLocation];
+		// If we encounter the escape char '\' we advance the scan location and
+		// copy the two characters to the path list, but only if the escape char
+		// is not the last character.
+		if ((location < (length - 1))
+		  && ((unichar)'\\' == [pathList characterAtIndex: (location)]))
+		{
+			NSString *twoChars = [pathList substringWithRange: NSMakeRange(location, 2)];
+			[thisPath appendString: twoChars];
+			[scanner setScanLocation: (location + 2)];
+		}
+		else
+		{
+			// The other only stop character is the proper delimiter ':', so we
+			// know that the path is complete if we encounter everything but a
+			// '\'. We thus add a copy to the accumulator and reset the string.
+			[accumulator addObject: [[thisPath copy] autorelease]];
+			[thisPath setString: @""];
+			[scanner setScanLocation: (location + 1)];
+		}
+	}
+	[arp release];
+
+	// Fetch any remaining path (this might happen if a path ends with an
+	// escape sequence)
+	if (0 != [thisPath length])
+	{
+		[accumulator addObject: [[thisPath copy] autorelease]];
+	}
+
+	NSRange nullRange = NSMakeRange(0,0);
+	[[accumulator map] stringByReplacingCharactersInRange: nullRange
+	                                           withString: @"-I"];
+	if (isFlattened)
+	{
+	   [[accumulator map] stringByAppendingPathComponent: @"Library/Headers"];
+	}
+	else
+	{
+		NSString *subDir = [@"Library/Headers" stringByAppendingPathComponent: [NSBundle _library_combo]];
+		// These are the normal headers:
+		[[accumulator map] stringByAppendingPathComponent: subDir];
+		// And these are the architecture dependent ones
+		[accumulator addObjectsFromArray: (NSArray*)[[accumulator mappedCollection] stringByAppendingPathComponent: [NSBundle _gnustep_target_dir]]];
+	}
+	return [[accumulator copy] autorelease];
+}
+#endif
 
 @interface SCKClangIndex : NSObject
 @property (readonly) CXIndex clangIndex;
 //FIXME: We should have different default arguments for C, C++ and ObjC.
 @property (retain, nonatomic) NSMutableArray *defaultArguments;
 @end
+
+
+
 
 @implementation SCKClangIndex
 @synthesize clangIndex, defaultArguments;
@@ -100,6 +195,14 @@ static void freestring(CXString *str)
 		@"-I/usr/local/include",
 		@"-I/Local/Library/Headers",
 		@"-fconstant-string-class=NSConstantString") mutableCopy];
+
+#	ifdef GNUSTEP
+	NSArray *gsIncludeDirs = GNUstepIncludeDirectories();
+	if (nil != gsIncludeDirs)
+	{
+		[defaultArguments addObjectsFromArray: gsIncludeDirs];
+	}
+# endif
 	return self;
 }
 - (void)finalize
@@ -137,7 +240,7 @@ static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXCli
 static NSString *classNameFromCategory(CXCursor category)
 {
 	__block NSString *className = nil;
-	clang_visitChildrenWithBlock(category, 
+	clang_visitChildrenWithBlock(category,
 		^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
 		{
 			if (CXCursor_ObjCClassRef == cursor.kind)
@@ -217,7 +320,7 @@ static NSString *classNameFromCategory(CXCursor category)
 	{
 		global.declaration = l;
 	}
-	
+
 	//NSLog(@"Found %@ %@ (%@) %@ at %@", isFunction ? @"function" : @"global", global.name, [global typeEncoding], isDefinition ? @"defined" : @"declared", l);
 
 	[dict setObject: global forKey: symbol];
@@ -225,14 +328,14 @@ static NSString *classNameFromCategory(CXCursor category)
 
 - (void)rebuildIndex
 {
-	clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit), 
+	clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
 		^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
 		{
 			switch(cursor.kind)
 			{
 				default: break;
 				case CXCursor_ObjCImplementationDecl:
-					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit), 
+					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
 						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
 						{
 							if (CXCursor_ObjCInstanceMethodDecl == cursor.kind)
@@ -240,7 +343,7 @@ static NSString *classNameFromCategory(CXCursor category)
 								SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
 								SCOPED_STR(className, clang_getCursorSpelling(parent));
 								//clang_visitChildren((parent), findClass, NULL);
-								SCKSourceLocation *l = [[SCKSourceLocation alloc] 
+								SCKSourceLocation *l = [[SCKSourceLocation alloc]
 									initWithClangSourceLocation: clang_getCursorLocation(cursor)];
 								[self setLocation: l
 								        forMethod: [NSString stringWithUTF8String: methodName]
@@ -253,7 +356,7 @@ static NSString *classNameFromCategory(CXCursor category)
 						});
 					break;
 				case CXCursor_ObjCCategoryImplDecl:
-					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit), 
+					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
 						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
 					{
 						if (CXCursor_ObjCInstanceMethodDecl == cursor.kind)
@@ -292,7 +395,7 @@ static NSString *classNameFromCategory(CXCursor category)
 			if (0)//(cursor.kind == CXCursor_ObjCInstanceMethodDecl)
 			{
 				const char *type = clang_getCString(clang_getDeclObjCTypeEncoding(cursor));
-			NSLog(@"Found definition of %s %s in %s %s (%s)\n", 
+			NSLog(@"Found definition of %s %s in %s %s (%s)\n",
 					clang_getCString(clang_getCursorKindSpelling(cursor.kind)), clang_getCString(clang_getCursorUSR(cursor)),
 					clang_getCString(clang_getCursorKindSpelling(parent.kind)), clang_getCString(clang_getCursorUSR(parent)), type);
 			}
@@ -303,7 +406,7 @@ static NSString *classNameFromCategory(CXCursor category)
 - (id)initUsingIndex: (SCKIndex*)anIndex
 {
 	idx = (SCKClangIndex*)anIndex;
-	NSAssert([idx isKindOfClass: [SCKClangIndex class]], 
+	NSAssert([idx isKindOfClass: [SCKClangIndex class]],
 			@"Initializing SCKClangSourceFile with incorrect kind of index");
 	args = [idx.defaultArguments mutableCopy];
 	return self;
@@ -332,7 +435,7 @@ static NSString *classNameFromCategory(CXCursor category)
 - (void)reparse
 {
 	const char *fn = [fileName UTF8String];
-	struct CXUnsavedFile unsaved[] = { 
+	struct CXUnsavedFile unsaved[] = {
 		{fn, [[source string] UTF8String], [source length]},
 		{NULL, NULL, 0}};
 	//NSLog(@"File is %d chars long", [source length]);
@@ -357,7 +460,7 @@ static NSString *classNameFromCategory(CXCursor category)
 			mainFile = unsaved[1].Filename;
 			unsavedCount = 2;
 		}
-		translationUnit = 
+		translationUnit =
 			clang_createTranslationUnitFromSourceFile(idx.clangIndex, fn, argc, argv, 0, unsaved);
 		/*
 			clang_parseTranslationUnit(idx.clangIndex, mainFile, argv, argc, unsaved,
