@@ -26,6 +26,9 @@ ${FRAMEWORK_NAME}_HEADER_FILES = \
 	SCKSyntaxHighlighter.h\
 	SCKTextTypes.h
 
+${FRAMEWORK_NAME}_RESOURCE_FILES = \
+	Resources/DefaultArguments.plist
+
 ${FRAMEWORK_NAME}_OBJCFLAGS = -fobjc-nonfragile-abi -fblocks
 ${FRAMEWORK_NAME}_CPPFLAGS = -I`llvm-config --src-root`/tools/clang/include/ -DSCKKIT_INTERNAL
 ${FRAMEWORK_NAME}_LDFLAGS = -L`llvm-config --libdir` -lclang -lstdc++

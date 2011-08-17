@@ -1,0 +1,19 @@
+(
+	"-xobjective-c",
+        "-DGNUSTEP",
+        "-DGNUSTEP_BASE_LIBRARY=1",
+        "-DGNU_GUI_LIBRARY=1",
+        "-DGNU_RUNTIME=1",
+        "-D_NATIVE_OBJC_EXCEPTIONS",
+        "-DGSWARN",
+        "-DGSDIAGNOSE",
+        "-fno-strict-aliasing",
+        "-fobjc-nonfragile-abi",
+        "-fexceptions",
+        "-Wall",
+        "-fgnu-runtime",
+        "-fblocks",
+        "-I/usr/local/include",
+        "-I/Local/Library/Headers",
+        "-fconstant-string-class=NSConstantString"
+)

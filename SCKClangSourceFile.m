@@ -173,28 +173,23 @@ NSArray *GNUstepIncludeDirectories()
 {
 	SUPERINIT;
 	clangIndex = clang_createIndex(1, 1);
-	// Options required to compile GNUstep apps
-	// FIXME: These should be read in from a plist or something equally
-	// (approximately) sensible.
-	defaultArguments = [A(
-		@"-xobjective-c",
-		@"-DGNUSTEP",
-		@"-DGNUSTEP_BASE_LIBRARY=1",
-		@"-DGNU_GUI_LIBRARY=1",
-		@"-DGNU_RUNTIME=1",
-		@"-D_NATIVE_OBJC_EXCEPTIONS",
-		@"-DGSWARN",
-		@"-DGSDIAGNOSE",
-		@"-fno-strict-aliasing",
-		@"-fobjc-nonfragile-abi",
-		@"-fexceptions",
-		@"-Wall",
-		@"-fgnu-runtime",
-		@"-fblocks",
-		// FIXME: Find the GNUstep header path more sensibly.
-		@"-I/usr/local/include",
-		@"-I/Local/Library/Headers",
-		@"-fconstant-string-class=NSConstantString") mutableCopy];
+
+	/*
+	 * NOTE: If BuildKit becomes usable, it might be sensible to store these
+	 * defaults in the BuildKit configuration and let BuildKit generate the
+	 * command line switches for us.
+	 */
+	NSString *plistPath = [[NSBundle bundleForClass: [SCKClangIndex class]]
+	                                pathForResource: @"DefaultArguments"
+	                                         ofType: @"plist"];
+
+	NSData *plistData = [NSData dataWithContentsOfFile: plistPath];
+
+	// Load the options required to compile GNUstep apps
+	defaultArguments = [(NSArray*)[NSPropertyListSerialization propertyListFromData: plistData
+	                                                               mutabilityOption: NSPropertyListImmutable
+	                                                                         format: NULL
+	                                                               errorDescription: NULL] mutableCopy];
 
 #	ifdef GNUSTEP
 	NSArray *gsIncludeDirs = GNUstepIncludeDirectories();
@@ -202,7 +197,8 @@ NSArray *GNUstepIncludeDirectories()
 	{
 		[defaultArguments addObjectsFromArray: gsIncludeDirs];
 	}
-# endif
+#	endif
+
 	return self;
 }
 - (void)finalize
