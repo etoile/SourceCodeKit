@@ -58,11 +58,6 @@ static void freestring(CXString *str)
 {
 	return [NSString stringWithFormat: @"%@:%d", file, (int)offset];
 }
-- (void)dealloc
-{
-	[file release];
-	[super dealloc];
-}
 @end
 
 #ifdef GNUSTEP
@@ -99,44 +94,44 @@ NSArray *GNUstepIncludeDirectories()
 	[scanner setCharactersToBeSkipped: [NSCharacterSet newlineCharacterSet]];
 	NSCharacterSet *stopSet = [NSCharacterSet characterSetWithCharactersInString: @":\\"];
 	NSMutableString *thisPath = [NSMutableString string];
-	NSAutoreleasePool *arp = [NSAutoreleasePool new];
-	while (NO == [scanner isAtEnd])
-	{
-		NSString *nextPart = nil;
-		BOOL foundPath = [scanner scanUpToCharactersFromSet: stopSet
-		                                           intoString: &nextPart];
-		if (foundPath)
+	@autoreleasepool {
+		while (NO == [scanner isAtEnd])
 		{
-			[thisPath appendString: nextPart];
-		}
-		NSInteger location = [scanner scanLocation];
-		// If we encounter the escape char '\' we advance the scan location and
-		// copy the two characters to the path list, but only if the escape char
-		// is not the last character.
-		if ((location < (length - 1))
-		  && ((unichar)'\\' == [pathList characterAtIndex: (location)]))
-		{
-			NSString *twoChars = [pathList substringWithRange: NSMakeRange(location, 2)];
-			[thisPath appendString: twoChars];
-			[scanner setScanLocation: (location + 2)];
-		}
-		else
-		{
-			// The other only stop character is the proper delimiter ':', so we
-			// know that the path is complete if we encounter everything but a
-			// '\'. We thus add a copy to the accumulator and reset the string.
-			[accumulator addObject: [[thisPath copy] autorelease]];
-			[thisPath setString: @""];
-			[scanner setScanLocation: (location + 1)];
+			NSString *nextPart = nil;
+			BOOL foundPath = [scanner scanUpToCharactersFromSet: stopSet
+			                                           intoString: &nextPart];
+			if (foundPath)
+			{
+				[thisPath appendString: nextPart];
+			}
+			NSInteger location = [scanner scanLocation];
+			// If we encounter the escape char '\' we advance the scan location and
+			// copy the two characters to the path list, but only if the escape char
+			// is not the last character.
+			if ((location < (length - 1))
+			  && ((unichar)'\\' == [pathList characterAtIndex: (location)]))
+			{
+				NSString *twoChars = [pathList substringWithRange: NSMakeRange(location, 2)];
+				[thisPath appendString: twoChars];
+				[scanner setScanLocation: (location + 2)];
+			}
+			else
+			{
+				// The other only stop character is the proper delimiter ':', so we
+				// know that the path is complete if we encounter everything but a
+				// '\'. We thus add a copy to the accumulator and reset the string.
+				[accumulator addObject: [thisPath copy]];
+				[thisPath setString: @""];
+				[scanner setScanLocation: (location + 1)];
+			}
 		}
 	}
-	[arp release];
 
 	// Fetch any remaining path (this might happen if a path ends with an
 	// escape sequence)
 	if (0 != [thisPath length])
 	{
-		[accumulator addObject: [[thisPath copy] autorelease]];
+		[accumulator addObject: [thisPath copy]];
 	}
 
 	NSRange nullRange = NSMakeRange(0,0);
@@ -154,14 +149,14 @@ NSArray *GNUstepIncludeDirectories()
 		// And these are the architecture dependent ones
 		[accumulator addObjectsFromArray: (NSArray*)[[accumulator mappedCollection] stringByAppendingPathComponent: [NSBundle _gnustep_target_dir]]];
 	}
-	return [[accumulator copy] autorelease];
+	return [accumulator copy];
 }
 #endif
 
 @interface SCKClangIndex : NSObject
 @property (readonly) CXIndex clangIndex;
 //FIXME: We should have different default arguments for C, C++ and ObjC.
-@property (retain, nonatomic) NSMutableArray *defaultArguments;
+@property ( nonatomic) NSMutableArray *defaultArguments;
 @end
 
 
@@ -201,16 +196,9 @@ NSArray *GNUstepIncludeDirectories()
 
 	return self;
 }
-- (void)finalize
-{
-	NSLog(@"Disposking of clang thingy");
-	clang_disposeIndex(clangIndex);
-}
 - (void)dealloc
 {
 	clang_disposeIndex(clangIndex);
-	[defaultArguments release];
-	[super dealloc];
 }
 @end
 @interface SCKClangSourceFile ()
@@ -263,7 +251,6 @@ static NSString *classNameFromCategory(CXCursor category)
 		cls = [SCKClass new];
 		cls.name = className;
 		[collection.classes setObject: cls forKey: className];
-		[cls release];
 	}
 	NSMutableDictionary *methods = cls.methods;
 	if (nil != categoryName)
@@ -275,7 +262,6 @@ static NSString *classNameFromCategory(CXCursor category)
 			cat.name = categoryName;
 			cat.parent = cls;
 			[cls.categories setObject: cat forKey: categoryName];
-			[cat release];
 		}
 		methods = cat.methods;
 	}
@@ -331,6 +317,7 @@ static NSString *classNameFromCategory(CXCursor category)
 			{
 				default: break;
 				case CXCursor_ObjCImplementationDecl:
+				{
 					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
 						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
 						{
@@ -346,12 +333,13 @@ static NSString *classNameFromCategory(CXCursor category)
 								          inClass: [NSString stringWithUTF8String: className]
 								         category: nil
 								     isDefinition: clang_isCursorDefinition(cursor)];
-								[l release];
 							}
 							return CXChildVisit_Continue;
 						});
 					break;
+				}
 				case CXCursor_ObjCCategoryImplDecl:
+				{
 					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
 						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
 					{
@@ -366,11 +354,11 @@ static NSString *classNameFromCategory(CXCursor category)
 							          inClass: className
 							         category: [NSString stringWithUTF8String: categoryName]
 							     isDefinition: clang_isCursorDefinition(cursor)];
-							[l release];
 						}
 						return CXChildVisit_Continue;
 					});
 					break;
+				}
 				case CXCursor_FunctionDecl:
 				case CXCursor_VarDecl:
 				{
@@ -425,7 +413,6 @@ static NSString *classNameFromCategory(CXCursor category)
 	{
 		clang_disposeTranslationUnit(translationUnit);
 	}
-	[super dealloc];
 }
 
 - (void)reparse
@@ -613,6 +600,107 @@ static NSString *classNameFromCategory(CXCursor category)
 			clang_disposeString(str);
 		}
 	}
+}
+- (SCKCodeCompletionResult*)completeAtLocation: (NSUInteger)location
+{
+	SCKCodeCompletionResult *result = [SCKCodeCompletionResult new];
+	CXSourceLocation l = clang_getLocationForOffset(translationUnit, file, (unsigned)location);
+	unsigned line, column;
+	clang_getInstantiationLocation(l, file, &line, &column, 0);
+	clock_t c1 = clock();
+	CXCodeCompleteResults *cr = clang_codeCompleteAt(translationUnit, [fileName UTF8String], line, column, 0, 0, 3);
+	clock_t c2 = clock();
+	NSLog(@"Complete time: %f\n", 
+	((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+	for (unsigned i=0 ; i<clang_codeCompleteGetNumDiagnostics(cr) ; i++)
+	{
+		CXDiagnostic d = clang_codeCompleteGetDiagnostic(cr, i);
+		unsigned fixits = clang_getDiagnosticNumFixIts(d);
+		printf("Found %d fixits\n", fixits);
+		if (1 == fixits)
+		{
+			CXSourceRange r;
+			CXString str = clang_getDiagnosticFixIt(d, 0, &r);
+			result.fixitRange = NSRangeFromCXSourceRange(r);
+			result.fixitText = [[NSString alloc] initWithUTF8String: clang_getCString(str)];
+			clang_disposeString(str);
+			break;
+		}
+		clang_disposeDiagnostic(d);
+	}
+	NSMutableArray *completions = [NSMutableArray new];
+	clang_sortCodeCompletionResults(cr->Results, cr->NumResults);
+	for (unsigned i=0 ; i<cr->NumResults ; i++)
+	{
+		CXCompletionString cs = cr->Results[i].CompletionString;
+		NSMutableAttributedString *completion = [NSMutableAttributedString new];
+		NSMutableString *s = [completion mutableString];
+		unsigned chunks = clang_getNumCompletionChunks(cs);
+		for (unsigned j=0 ; j<chunks ; j++)
+		{
+			switch (clang_getCompletionChunkKind(cs, j))
+			{
+				case CXCompletionChunk_Optional:
+				case CXCompletionChunk_TypedText:
+				case CXCompletionChunk_Text:
+				{
+					CXString str = clang_getCompletionChunkText(cs, j);
+					[s appendFormat: @"%s", clang_getCString(str)];
+					clang_disposeString(str);
+					break;
+				}
+				case CXCompletionChunk_Placeholder: 
+				{
+					CXString str = clang_getCompletionChunkText(cs, j);
+					[s appendFormat: @"<# %s #>", clang_getCString(str)];
+					clang_disposeString(str);
+					break;
+				}
+				case CXCompletionChunk_Informative:
+				{
+					CXString str = clang_getCompletionChunkText(cs, j);
+					[s appendFormat: @"/* %s */", clang_getCString(str)];
+					clang_disposeString(str);
+					break;
+				}
+				case CXCompletionChunk_CurrentParameter:
+				case CXCompletionChunk_LeftParen:
+					[s appendString: @"("]; break;
+				case CXCompletionChunk_RightParen: 
+					[s appendString: @"("]; break;
+				case CXCompletionChunk_LeftBracket:
+					[s appendString: @"["]; break;
+				case CXCompletionChunk_RightBracket:
+					[s appendString: @"]"]; break;
+				case CXCompletionChunk_LeftBrace:
+					[s appendString: @"{"]; break;
+				case CXCompletionChunk_RightBrace: 
+					[s appendString: @"}"]; break;
+				case CXCompletionChunk_LeftAngle:
+					[s appendString: @"<"]; break;
+				case CXCompletionChunk_RightAngle:
+					[s appendString: @">"]; break;
+				case CXCompletionChunk_Comma:
+					[s appendString: @","]; break;
+				case CXCompletionChunk_ResultType: 
+					break;
+				case CXCompletionChunk_Colon:
+					[s appendString: @":"]; break;
+				case CXCompletionChunk_SemiColon:
+					[s appendString: @";"]; break;
+				case CXCompletionChunk_Equal:
+					[s appendString: @"="]; break;
+				case CXCompletionChunk_HorizontalSpace: 
+					[s appendString: @" "]; break;
+				case CXCompletionChunk_VerticalSpace:
+					[s appendString: @"\n"]; break;
+			}
+		}
+		[completions addObject: completion];
+	}
+	result.completions = completions;
+	clang_disposeCodeCompleteResults(cr);
+	return result;
 }
 @end
 

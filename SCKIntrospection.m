@@ -5,14 +5,6 @@
 
 @implementation SCKProgramComponent
 @synthesize parent, declaration, definition, documentation, name;
-- (void)dealloc
-{
-	[name release];
-	[declaration release];
-	[definition release];
-	[documentation release];
-	[super dealloc];
-}
 - (NSString*)description
 {
 	return name;
@@ -21,12 +13,6 @@
 
 @implementation SCKBundle
 @synthesize classes, functions;
-- (void)dealloc
-{
-	[classes release];
-	[functions release];
-	[super dealloc];
-}
 - (id)init
 {
 	SUPERINIT;
@@ -36,7 +22,7 @@
 }
 - (NSString*)description
 {
-	NSMutableString *str = [[self.name mutableCopy] autorelease];
+	NSMutableString *str = [self.name mutableCopy];
 	for (id function in functions)
 	{
 		[str appendFormat: @"\n\t%@", function];
@@ -51,17 +37,9 @@
 
 @implementation SCKClass
 @synthesize subclasses, superclass, categories, methods, ivars;
-- (void)dealloc
-{
-	[subclasses release];
-	[categories release];
-	[methods release];
-	[ivars release];
-	[super dealloc];
-}
 - (NSString*)description
 {
-	NSMutableString *str = [[self.name mutableCopy] autorelease];
+	NSMutableString *str = [self.name mutableCopy];
 	for (id ivar in ivars)
 	{
 		[str appendFormat: @"\n\t\t%@", ivar];
@@ -127,11 +105,6 @@
 	methods = [NSMutableDictionary new];
 	return self;
 }
-- (void)dealloc
-{
-	[methods release];
-	[super dealloc];
-}
 - (NSString*)description
 {
 	NSMutableString *str = [NSMutableString stringWithFormat: @"%@ (%@)", self.parent.name, self.name];
@@ -153,11 +126,6 @@
 
 @implementation SCKTypedProgramComponent
 @synthesize typeEncoding;
-- (void)dealloc
-{
-	[typeEncoding release];
-	[super dealloc];
-}
 @end
 
 @implementation SCKIvar @end

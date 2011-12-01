@@ -9,12 +9,11 @@
 @synthesize fileName, source, collection;
 - (id)initUsingIndex: (SCKIndex*)anIndex
 {
-	[self release];
 	return nil;
 }
 + (SCKSourceFile*)fileUsingIndex: (SCKIndex*)anIndex
 {
-	return [[[self alloc] initUsingIndex: (SCKIndex*)anIndex] autorelease];
+	return [[self alloc] initUsingIndex: (SCKIndex*)anIndex];
 }
 - (void)reparse {}
 - (void)lexicalHighlightFile {}

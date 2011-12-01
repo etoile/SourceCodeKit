@@ -36,7 +36,7 @@
 /**
  * The parent of this component.  
  */
-@property (nonatomic, assign) SCKProgramComponent *parent;
+@property (nonatomic, unsafe_unretained) SCKProgramComponent *parent;
 @end
 
 /**
@@ -44,28 +44,28 @@
  */
 @interface SCKTypedProgramComponent : SCKProgramComponent
 /** Objective-C type encoding of the component. */
-@property (nonatomic, retain) NSString *typeEncoding;
+@property (retain, nonatomic) NSString *typeEncoding;
 @end
 
 @interface SCKBundle : SCKProgramComponent
 /**
  * All of the public symbols exported by the bundle.
  */
-@property (nonatomic, retain) NSMutableArray *classes;
-@property (nonatomic, retain) NSMutableArray *functions;
+@property (retain, nonatomic) NSMutableArray *classes;
+@property (retain, nonatomic) NSMutableArray *functions;
 @end
 
 @interface SCKClass : SCKProgramComponent
-@property (nonatomic, assign) SCKClass *superclass;
-@property (nonatomic, retain, readonly) NSMutableArray *subclasses;
-@property (nonatomic, retain, readonly) NSMutableDictionary *categories;
-@property (nonatomic, retain, readonly) NSMutableDictionary *methods;
-@property (nonatomic, retain, readonly) NSMutableArray *ivars;
+@property (nonatomic, unsafe_unretained) SCKClass *superclass;
+@property (nonatomic, readonly) NSMutableArray *subclasses;
+@property (nonatomic, readonly) NSMutableDictionary *categories;
+@property (nonatomic, readonly) NSMutableDictionary *methods;
+@property (nonatomic, readonly) NSMutableArray *ivars;
 - (id) initWithClass: (Class)cls;
 @end
 
 @interface SCKCategory : SCKProgramComponent
-@property (nonatomic, retain, readonly) NSMutableDictionary *methods;
+@property (nonatomic, readonly) NSMutableDictionary *methods;
 @end
 
 @interface SCKMethod : SCKTypedProgramComponent

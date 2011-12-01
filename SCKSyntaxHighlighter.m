@@ -36,12 +36,6 @@ static NSDictionary *noAttributes;
 				mutableCopy];
 	return self;
 }
-- (void)dealloc
-{
-	[tokenAttributes release];
-	[semanticAttributes release];
-	[super dealloc];
-}
 
 - (void)transformString: (NSMutableAttributedString*)source;
 {

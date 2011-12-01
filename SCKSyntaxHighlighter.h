@@ -13,11 +13,11 @@
 /**
  * Attributes to be applied to token types.
  */
-@property (nonatomic, retain) NSMutableDictionary *tokenAttributes;
+@property (retain, nonatomic) NSMutableDictionary *tokenAttributes;
 /**
  * Attributes to be applied to semantic types.
  */
-@property (nonatomic, retain) NSMutableDictionary *semanticAttributes;
+@property (retain, nonatomic) NSMutableDictionary *semanticAttributes;
 /**
  * Transforms a source string, replacing the semantic attributes with
  * presentation attributes.

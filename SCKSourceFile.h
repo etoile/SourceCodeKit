@@ -39,7 +39,7 @@
 /**
  * The source collection containing this file.
  */
-@property (nonatomic, assign) SCKSourceCollection *collection;
+@property (nonatomic, unsafe_unretained) SCKSourceCollection *collection;
 + (SCKSourceFile*)fileUsingIndex: (SCKIndex*)anIndex;
 /**
  * Parses the contents of the file.  Must be called before reapplying

@@ -1,4 +1,5 @@
 #import "SCKSourceCollection.h"
+#import "SCKCodeCompletionResult.h"
 #import "SCKSourceFile.h"
 #import "SCKSyntaxHighlighter.h"
 #import "SCKTextTypes.h"
