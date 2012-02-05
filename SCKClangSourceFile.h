@@ -1,5 +1,4 @@
-#include <Foundation/NSObject.h>
-#include <Foundation/NSGeometry.h>
+#include <Foundation/Foundation.h>
 #include "SCKSourceFile.h"
 #include <clang-c/Index.h>
 
@@ -20,6 +19,10 @@
 	/** libclang translation unit handle. */
 	CXTranslationUnit translationUnit;
 	CXFile file;
+
+	NSMutableDictionary *classes;
+	NSMutableDictionary *functions;
+	NSMutableDictionary *globals;
 }
 @property (nonatomic, readonly) NSMutableDictionary *classes;
 @property (nonatomic, readonly) NSMutableDictionary *functions;
