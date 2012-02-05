@@ -14,6 +14,7 @@
 	NSMutableDictionary *indexes;
 	/** Files that have already been created. */
 	NSMutableDictionary *files; //TODO: turn back into NSCache
+	NSMutableDictionary *bundleClasses;
 }
 @property (nonatomic, readonly, retain) NSMutableDictionary *classes;
 @property (nonatomic, readonly, retain) NSMutableDictionary *bundles;

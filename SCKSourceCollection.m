@@ -33,12 +33,14 @@ static NSDictionary *fileClasses;
 	[indexes setObject: index forKey: @"cc"];
 	files = [NSMutableDictionary new];
 	bundles = [NSMutableDictionary new];
+	bundleClasses = [NSMutableDictionary new];
 	int count = objc_getClassList(NULL, 0);
 	Class *classList = (__unsafe_unretained Class *)calloc(sizeof(Class), count);
 	objc_getClassList(classList, count);
 	for (int i=0 ; i<count ; i++)
 	{
 		STACK_SCOPED SCKClass *cls = [[SCKClass alloc] initWithClass: classList[i]];
+		[bundleClasses setObject: cls forKey: [cls name]];
 		NSBundle *b = [NSBundle bundleForClass: classList[i]];
 		if (nil == b)
 		{
@@ -57,10 +59,10 @@ static NSDictionary *fileClasses;
 	return self;
 }
 
-- (NSMutableDictionary*)programComponentsFrom: (NSDictionary*) bundleOrFiles forKey: (NSString*)key
+- (NSMutableDictionary*)programComponentsFromFilesForKey: (NSString*)key
 {
 	NSMutableDictionary *components = [NSMutableDictionary new];
-	for (id file in [bundleOrFiles objectEnumerator])
+	for (SCKSourceFile *file in [files objectEnumerator])
 	{
 		[components addEntriesFromDictionary: [file valueForKey: key]];
 	}
@@ -69,19 +71,19 @@ static NSDictionary *fileClasses;
 
 - (NSDictionary*)classes
 {
-	NSMutableDictionary* classes = [self programComponentsFrom: files forKey: @"classes"];
-	[classes addEntriesFromDictionary: [self programComponentsFrom: bundles forKey: @"classes"]];
+	NSMutableDictionary* classes = [self programComponentsFromFilesForKey: @"classes"];
+	[classes addEntriesFromDictionary: bundleClasses];
 	return classes;
 }
 
 - (NSDictionary*)functions
 {
-	return [self programComponentsFrom: files forKey: @"functions"];
+	return [self programComponentsFromFilesForKey: @"functions"];
 }
 
 - (NSDictionary*)globals
 {
-	return [self programComponentsFrom: files forKey: @"globals"];
+	return [self programComponentsFromFilesForKey: @"globals"];
 }
 
 - (SCKIndex*)indexForFileExtension: (NSString*)extension
