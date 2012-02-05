@@ -202,6 +202,8 @@ NSArray *GNUstepIncludeDirectories()
 
 @implementation SCKClangSourceFile
 
+@synthesize classes, functions, globals;
+
 /*
 static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
 {
@@ -233,19 +235,27 @@ static NSString *classNameFromCategory(CXCursor category)
 	return className;
 }
 
+- (id)init
+{
+	SUPERINIT;
+	classes = [NSMutableDictionary new];
+	functions = [NSMutableDictionary new];
+	globals = [NSMutableDictionary new];
+	return self;
+}
+
 - (void)setLocation: (SCKSourceLocation*)aLocation
           forMethod: (NSString*)methodName
             inClass: (NSString*)className
            category: (NSString*)categoryName
        isDefinition: (BOOL)isDefinition
 {
-	SCKSourceCollection *collection = self.collection;
-	SCKClass *cls = [collection.classes objectForKey: className];
+	SCKClass *cls = [classes objectForKey: className];
 	if (nil == cls)
 	{
 		cls = [SCKClass new];
 		cls.name = className;
-		[collection.classes setObject: cls forKey: className];
+		[classes setObject: cls forKey: className];
 	}
 	NSMutableDictionary *methods = cls.methods;
 	if (nil != categoryName)
@@ -276,8 +286,7 @@ static NSString *classNameFromCategory(CXCursor category)
          isFunction: (BOOL)isFunction
        isDefinition: (BOOL)isDefinition
 {
-	SCKSourceCollection *collection = self.collection;
-	NSMutableDictionary *dict = isFunction ? collection.functions : collection.globals;
+	NSMutableDictionary *dict = isFunction ? functions : globals;
 	NSString *symbol = [NSString stringWithUTF8String: name];
 
 	SCKTypedProgramComponent *global = [dict objectForKey: symbol];

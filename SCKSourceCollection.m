@@ -10,7 +10,7 @@ static NSDictionary *fileClasses;
 @interface SCKClangIndex : NSObject @end
 
 @implementation SCKSourceCollection
-@synthesize classes, bundles, globals, functions;
+@synthesize bundles;
 + (void)initialize
 {
 	Class clang = NSClassFromString(@"SCKClangSourceFile");
@@ -33,9 +33,6 @@ static NSDictionary *fileClasses;
 	[indexes setObject: index forKey: @"cc"];
 	files = [NSCache new];
 	bundles = [NSMutableDictionary new];
-	classes = [NSMutableDictionary new];
-	functions = [NSMutableDictionary new];
-	globals = [NSMutableDictionary new];
 	int count = objc_getClassList(NULL, 0);
 	Class *classList = (__unsafe_unretained Class *)calloc(sizeof(Class), count);
 	objc_getClassList(classList, count);
@@ -60,6 +57,32 @@ static NSDictionary *fileClasses;
 	free(classList);
 	return self;
 }
+
+- (NSDictionary*)programComponentsFromFilesForKey: (NSString*)key
+{
+	NSMutableDictionary *components = [NSMutableDictionary new];
+	for (SCKSourceFile *file in files)
+	{
+		[components addEntriesFromDictionary: [file valueForKey: key]];
+	}
+	return components;
+}
+
+- (NSDictionary*)classes
+{
+	return [self programComponentsFromFilesForKey: @"classes"];
+}
+
+- (NSDictionary*)functions
+{
+	return [self programComponentsFromFilesForKey: @"functions"];
+}
+
+- (NSDictionary*)globals
+{
+	return [self programComponentsFromFilesForKey: @"globals"];
+}
+
 - (SCKIndex*)indexForFileExtension: (NSString*)extension
 {
 	return [indexes objectForKey: extension];

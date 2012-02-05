@@ -21,4 +21,7 @@
 	CXTranslationUnit translationUnit;
 	CXFile file;
 }
+@property (nonatomic, readonly) NSMutableDictionary *classes;
+@property (nonatomic, readonly) NSMutableDictionary *functions;
+@property (nonatomic, readonly) NSMutableDictionary *globals;
 @end
