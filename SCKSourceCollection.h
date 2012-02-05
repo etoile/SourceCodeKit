@@ -15,10 +15,10 @@
 	/** Files that have already been created. */
 	NSCache *files;
 }
-@property (nonatomic, readonly) NSMutableDictionary *classes;
-@property (nonatomic, readonly) NSMutableDictionary *bundles;
-@property (nonatomic, readonly) NSMutableDictionary *functions;
-@property (nonatomic, readonly) NSMutableDictionary *globals;
+@property (nonatomic, readonly, retain) NSMutableDictionary *classes;
+@property (nonatomic, readonly, retain) NSMutableDictionary *bundles;
+@property (nonatomic, readonly, retain) NSMutableDictionary *functions;
+@property (nonatomic, readonly, retain) NSMutableDictionary *globals;
 /**
  * Generates a new source file object corresponding to the specified on-disk
  * file.  The returned object is not guaranteed to be unique - subsequent calls

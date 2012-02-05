@@ -68,3 +68,12 @@
  */
 - (void)collectDiagnostics;
 @end
+
+@interface SCKSourceLocation : NSObject
+{
+	@public
+	NSString *file;
+	NSUInteger offset;
+}
+@property (retain, nonatomic) NSString *file; 
+@end

@@ -86,8 +86,8 @@ static NSDictionary *noAttributes;
 		}
 	} while (i < end);
 	clock_t c2 = clock();
-	NSLog(@"Generating presentation markup took %f seconds.  .",
-		((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+	//NSLog(@"Generating presentation markup took %f seconds.  .",
+//		((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 }
 @end
 

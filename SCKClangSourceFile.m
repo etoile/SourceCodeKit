@@ -34,15 +34,10 @@ static void freestring(CXString *str)
 	__attribute__((cleanup(freestring))) CXString name ## str = value;\
 	const char *name = clang_getCString(name ## str);
 
-
-@interface SCKSourceLocation : NSObject
-{
-	@public
-	NSString *file;
-	NSUInteger offset;
-}
-@end
 @implementation SCKSourceLocation
+
+@synthesize file;
+
 - (id)initWithClangSourceLocation: (CXSourceLocation)l
 {
 	SUPERINIT;
@@ -310,6 +305,7 @@ static NSString *classNameFromCategory(CXCursor category)
 
 - (void)rebuildIndex
 {
+	if (0 == translationUnit) { return; }
 	clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
 		^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
 		{
@@ -456,7 +452,7 @@ static NSString *classNameFromCategory(CXCursor category)
 	else
 	{
 		clock_t c1 = clock();
-		NSLog(@"Reparsing translation unit");
+		// NSLog(@"Reparsing translation unit");
 		if (0 != clang_reparseTranslationUnit(translationUnit, 1, unsaved, clang_defaultReparseOptions(translationUnit)))
 		{
 			clang_disposeTranslationUnit(translationUnit);
@@ -573,10 +569,10 @@ static NSString *classNameFromCategory(CXCursor category)
 }
 - (void)collectDiagnostics
 {
-	//NSLog(@"Collecting diagnostics");
+	// NSLog(@"Collecting diagnostics");
 	unsigned diagnosticCount = clang_getNumDiagnostics(translationUnit);
 	unsigned opts = clang_defaultDiagnosticDisplayOptions();
-	//NSLog(@"%d diagnostics found", diagnosticCount);
+	// NSLog(@"%d diagnostics found", diagnosticCount);
 	for (unsigned i=0 ; i<diagnosticCount ; i++)
 	{
 		CXDiagnostic d = clang_getDiagnostic(translationUnit, i);
@@ -586,13 +582,25 @@ static NSString *classNameFromCategory(CXCursor category)
 			CXString str = clang_getDiagnosticSpelling(d);
 			CXSourceLocation loc = clang_getDiagnosticLocation(d);
 			unsigned rangeCount = clang_getDiagnosticNumRanges(d);
-			//NSLog(@"%d ranges for diagnostic", rangeCount);
+			// NSLog(@"%d ranges for diagnostic", rangeCount);
+			if (rangeCount == 0) {
+				SCKSourceLocation* sloc = [[SCKSourceLocation alloc] 
+					 initWithClangSourceLocation: loc];
+				NSDictionary *attr = D([NSNumber numberWithInt: (int)s], kSCKDiagnosticSeverity,
+					 [NSString stringWithUTF8String: clang_getCString(str)], kSCKDiagnosticText);
+				// NSRange r = NSRangeFromCXSourceRange(clang_getDiagnosticRange(d, 0));
+				NSRange r = NSMakeRange(sloc->offset, 1);
+				// NSLog(@"diagnostic: %@ %d, %d loc %d", attr, r.location, r.length, sloc->offset);
+				[source addAttribute: kSCKDiagnostic
+				               value: attr
+				               range: r];
+			}
 			for (unsigned j=0 ; j<rangeCount ; j++)
 			{
 				NSRange r = NSRangeFromCXSourceRange(clang_getDiagnosticRange(d, j));
 				NSDictionary *attr = D([NSNumber numberWithInt: (int)s], kSCKDiagnosticSeverity,
 					 [NSString stringWithUTF8String: clang_getCString(str)], kSCKDiagnosticText);
-				//NSLog(@"Added diagnostic %@ for range: %@", attr, NSStringFromRange(r));
+				// NSLog(@"Added diagnostic %@ for range: %@", attr, NSStringFromRange(r));
 				[source addAttribute: kSCKDiagnostic
 				               value: attr
 				               range: r];

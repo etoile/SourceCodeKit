@@ -57,15 +57,15 @@
 
 @interface SCKClass : SCKProgramComponent
 @property (nonatomic, unsafe_unretained) SCKClass *superclass;
-@property (nonatomic, readonly) NSMutableArray *subclasses;
-@property (nonatomic, readonly) NSMutableDictionary *categories;
-@property (nonatomic, readonly) NSMutableDictionary *methods;
-@property (nonatomic, readonly) NSMutableArray *ivars;
+@property (nonatomic, readonly, retain) NSMutableArray *subclasses;
+@property (nonatomic, readonly, retain) NSMutableDictionary *categories;
+@property (nonatomic, readonly, retain) NSMutableDictionary *methods;
+@property (nonatomic, readonly, retain) NSMutableArray *ivars;
 - (id) initWithClass: (Class)cls;
 @end
 
 @interface SCKCategory : SCKProgramComponent
-@property (nonatomic, readonly) NSMutableDictionary *methods;
+@property (nonatomic, readonly, retain) NSMutableDictionary *methods;
 @end
 
 @interface SCKMethod : SCKTypedProgramComponent
