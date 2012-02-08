@@ -92,19 +92,26 @@ static NSDictionary *fileClasses;
 }
 - (SCKSourceFile*)sourceFileForPath: (NSString*)aPath
 {
-	SCKSourceFile *file = [files objectForKey: aPath];
+	NSString *path = [aPath stringByStandardizingIntoAbsolutePath];
+
+	SCKSourceFile *file = [files objectForKey: path];
 	if (nil != file)
 	{
 		return file;
 	}
-	NSString *extension = [aPath pathExtension];
+
+	NSString *extension = [path pathExtension];
 	file = [[fileClasses objectForKey: extension] fileUsingIndex: [indexes objectForKey: extension]];
-	file.fileName = aPath;
+	file.fileName = path;
 	file.collection = self;
 	[file reparse];
-	if (nil == file)
+	if (nil != file)
 	{
-		NSLog(@"Failed to load %@", aPath);
+		[files setObject: file forKey: path];
+	}
+	else
+	{
+		NSLog(@"Failed to load %@", path);
 	}
 	return file;
 }

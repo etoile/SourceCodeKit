@@ -235,15 +235,6 @@ static NSString *classNameFromCategory(CXCursor category)
 	return className;
 }
 
-- (id)init
-{
-	SUPERINIT;
-	classes = [NSMutableDictionary new];
-	functions = [NSMutableDictionary new];
-	globals = [NSMutableDictionary new];
-	return self;
-}
-
 - (void)setLocation: (SCKSourceLocation*)aLocation
           forMethod: (NSString*)methodName
             inClass: (NSString*)className
@@ -398,6 +389,9 @@ static NSString *classNameFromCategory(CXCursor category)
 	NSAssert([idx isKindOfClass: [SCKClangIndex class]],
 			@"Initializing SCKClangSourceFile with incorrect kind of index");
 	args = [idx.defaultArguments mutableCopy];
+	classes = [NSMutableDictionary new];
+	functions = [NSMutableDictionary new];
+	globals = [NSMutableDictionary new];
 	return self;
 }
 - (void)addIncludePath: (NSString*)includePath
