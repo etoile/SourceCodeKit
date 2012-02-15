@@ -5,6 +5,7 @@
 @class NSMutableArray;
 @class NSMutableAttributedString;
 @class SCKSourceCollection;
+@class SCKCodeCompletionResult;
 
 /**
  * The SCKSyntaxHighlighter class is responsible for performing lexical and
@@ -67,6 +68,10 @@
  * attributed string which contain them.
  */
 - (void)collectDiagnostics;
+/**
+ * Returns completion result at the location
+ */
+- (SCKCodeCompletionResult*)completeAtLocation: (NSUInteger) location;
 @end
 
 @interface SCKSourceLocation : NSObject

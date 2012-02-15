@@ -587,6 +587,7 @@ static NSString *classNameFromCategory(CXCursor category)
 			unsigned rangeCount = clang_getDiagnosticNumRanges(d);
 			// NSLog(@"%d ranges for diagnostic", rangeCount);
 			if (rangeCount == 0) {
+				//FIXME: probably somewhat redundant
 				SCKSourceLocation* sloc = [[SCKSourceLocation alloc] 
 					 initWithClangSourceLocation: loc];
 				NSDictionary *attr = D([NSNumber numberWithInt: (int)s], kSCKDiagnosticSeverity,
@@ -615,11 +616,22 @@ static NSString *classNameFromCategory(CXCursor category)
 - (SCKCodeCompletionResult*)completeAtLocation: (NSUInteger)location
 {
 	SCKCodeCompletionResult *result = [SCKCodeCompletionResult new];
+
+	struct CXUnsavedFile unsavedFile;
+	unsavedFile.Filename = [fileName UTF8String];
+	unsavedFile.Contents = [[source string] UTF8String];
+	unsavedFile.Length = [[source string] length];
+
 	CXSourceLocation l = clang_getLocationForOffset(translationUnit, file, (unsigned)location);
 	unsigned line, column;
 	clang_getInstantiationLocation(l, file, &line, &column, 0);
 	clock_t c1 = clock();
-	CXCodeCompleteResults *cr = clang_codeCompleteAt(translationUnit, [fileName UTF8String], line, column, 0, 0, 3);
+
+	int options = CXCompletionContext_AnyType |
+			CXCompletionContext_AnyValue |
+			CXCompletionContext_ObjCInterface;
+
+	CXCodeCompleteResults *cr = clang_codeCompleteAt(translationUnit, [fileName UTF8String], line, column, &unsavedFile, 1, options);
 	clock_t c2 = clock();
 	NSLog(@"Complete time: %f\n", 
 	((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
@@ -641,6 +653,7 @@ static NSString *classNameFromCategory(CXCursor category)
 	}
 	NSMutableArray *completions = [NSMutableArray new];
 	clang_sortCodeCompletionResults(cr->Results, cr->NumResults);
+	//NSLog(@"we have %d results", cr->NumResults);
 	for (unsigned i=0 ; i<cr->NumResults ; i++)
 	{
 		CXCompletionString cs = cr->Results[i].CompletionString;

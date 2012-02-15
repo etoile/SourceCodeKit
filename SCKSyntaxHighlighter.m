@@ -80,7 +80,10 @@ static NSDictionary *noAttributes;
 			[source addAttribute: NSToolTipAttributeName
 			               value: [diagnostic objectForKey: kSCKDiagnosticText]
 			               range: r];
-			[source addAttribute: NSBackgroundColorAttributeName
+			[source addAttribute: NSUnderlineStyleAttributeName
+				       value: [NSNumber numberWithInt: NSSingleUnderlineStyle]
+				       range: r];	
+			[source addAttribute: NSUnderlineColorAttributeName
 			               value: [NSColor redColor]
 			               range: r];
 		}

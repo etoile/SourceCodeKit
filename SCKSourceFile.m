@@ -21,5 +21,6 @@
 - (void)syntaxHighlightRange: (NSRange)r {}
 - (void)addIncludePath: (NSString*)includePath {}
 - (void)collectDiagnostics {}
+- (SCKCodeCompletionResult*)completeAtLocation: (NSUInteger) location { return nil; }
 @end
 
