@@ -79,7 +79,7 @@
 	return [self programComponentsForKey: @"functions"];
 }
 
-- (NSArray *)global
+- (NSArray *)globals
 {
 	return [self programComponentsForKey: @"globals"];
 }
