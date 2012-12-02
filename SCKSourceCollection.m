@@ -81,6 +81,16 @@ static NSDictionary *fileClasses;
 	return [self programComponentsFromFilesForKey: @"functions"];
 }
 
+- (NSDictionary*)enumerationValues
+{
+	return [self programComponentsFromFilesForKey: @"enumerationValues"];
+}
+
+- (NSDictionary*)enumerations
+{
+	return [self programComponentsFromFilesForKey: @"enumerations"];
+}
+
 - (NSDictionary*)globals
 {
 	return [self programComponentsFromFilesForKey: @"globals"];

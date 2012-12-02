@@ -80,3 +80,26 @@
 
 @interface SCKGlobal : SCKTypedProgramComponent
 @end
+
+/**
+ * Enumerated type value.  This encapsulates the name and value of the
+ * enumeration value.  
+ */
+@interface SCKEnumerationValue : SCKProgramComponent
+/**
+ * Returns the value of the enumeration.
+ */
+@property long long value;
+/**
+ * The name of the enumeration.
+ */
+@property (nonatomic, retain) NSString *enumerationName;
+@end
+
+@interface SCKEnumeration : SCKTypedProgramComponent
+/**
+ * Array of SCKEnumerationValue instances that describe the values in this
+ * enumeration.
+ */
+@property (nonatomic, retain) NSMutableDictionary *values;
+@end

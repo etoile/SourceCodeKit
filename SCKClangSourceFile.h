@@ -19,12 +19,10 @@
 	/** libclang translation unit handle. */
 	CXTranslationUnit translationUnit;
 	CXFile file;
-
-	NSMutableDictionary *classes;
-	NSMutableDictionary *functions;
-	NSMutableDictionary *globals;
 }
 @property (nonatomic, readonly) NSMutableDictionary *classes;
 @property (nonatomic, readonly) NSMutableDictionary *functions;
 @property (nonatomic, readonly) NSMutableDictionary *globals;
+@property (nonatomic, readonly) NSMutableDictionary *enumerations;
+@property (nonatomic, readonly) NSMutableDictionary *enumerationValues;
 @end

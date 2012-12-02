@@ -129,3 +129,13 @@
 @implementation SCKIvar @end
 @implementation SCKFunction @end
 @implementation SCKGlobal @end
+@implementation SCKEnumeration
+@synthesize values;
+@end
+@implementation SCKEnumerationValue
+@synthesize value, enumerationName;
+- (NSString*)description
+{
+	return [NSString stringWithFormat: @"%@ (%lld)", self.name, value];
+}
+@end

@@ -162,6 +162,7 @@ NSArray *GNUstepIncludeDirectories()
 - (id)init
 {
 	SUPERINIT;
+	clang_toggleCrashRecovery(0);
 	clangIndex = clang_createIndex(1, 1);
 
 	/*
@@ -202,7 +203,7 @@ NSArray *GNUstepIncludeDirectories()
 
 @implementation SCKClangSourceFile
 
-@synthesize classes, functions, globals;
+@synthesize classes, functions, globals, enumerations, enumerationValues;
 
 /*
 static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
@@ -311,7 +312,15 @@ static NSString *classNameFromCategory(CXCursor category)
 		{
 			switch(cursor.kind)
 			{
-				default: break;
+				default:
+				{
+#if 0
+					SCOPED_STR(name, clang_getCursorSpelling(cursor));
+					SCOPED_STR(kind, clang_getCursorKindSpelling(clang_getCursorKind(cursor)));
+					NSLog(@"Unhandled cursor type: %s (%s)", kind, name);
+#endif
+					break;
+				}
 				case CXCursor_ObjCImplementationDecl:
 				{
 					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
@@ -371,6 +380,65 @@ static NSString *classNameFromCategory(CXCursor category)
 					}
 					break;
 				}
+				case CXCursor_EnumDecl:
+				{
+					SCOPED_STR(enumName, clang_getCursorSpelling(cursor));
+					SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
+					NSString *name = [NSString stringWithUTF8String: enumName];
+					SCKEnumeration *e = [enumerations objectForKey: name];
+					__block BOOL foundType;
+					if (e == nil)
+					{
+						e = [SCKEnumeration new];
+						foundType = NO;
+						e.name = name;
+						e.declaration = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+					}
+					else
+					{
+						foundType = e.typeEncoding != nil;
+					}
+					clang_visitChildrenWithBlock(cursor,
+						^ enum CXChildVisitResult (CXCursor enumCursor, CXCursor parent)
+					{
+						if (enumCursor.kind == CXCursor_EnumConstantDecl)
+						{
+							if (!foundType)
+							{
+								SCOPED_STR(type, clang_getDeclObjCTypeEncoding(enumCursor));
+								foundType = YES;
+								e.typeEncoding = [NSString stringWithUTF8String: type];
+							}
+							SCOPED_STR(valName, clang_getCursorSpelling(enumCursor));
+							NSString *vName = [NSString stringWithUTF8String: valName];
+							SCKEnumerationValue *v = [e.values objectForKey: vName];
+							if (nil == v)
+							{
+								v = [SCKEnumerationValue new];
+								v.name = vName;
+								v.declaration = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(enumCursor)];
+								v.value = clang_getEnumConstantDeclValue(enumCursor);
+								[e.values setObject: v forKey: vName];
+							}
+							SCKEnumerationValue *ev = [enumerationValues objectForKey: vName];
+							if (ev)
+							{
+								if (ev.value != v.value)
+								{
+									[enumerationValues setObject: [NSMutableArray arrayWithObjects: v, ev, nil]
+									                      forKey: vName];
+								}
+							}
+							else
+							{
+								[enumerationValues setObject: v
+								                      forKey: vName];
+							}
+						}
+						return CXChildVisit_Continue;
+					});
+					break;
+				}
 			}
 			if (0)//(cursor.kind == CXCursor_ObjCInstanceMethodDecl)
 			{
@@ -392,6 +460,8 @@ static NSString *classNameFromCategory(CXCursor category)
 	classes = [NSMutableDictionary new];
 	functions = [NSMutableDictionary new];
 	globals = [NSMutableDictionary new];
+	enumerations = [NSMutableDictionary new];
+	enumerationValues = [NSMutableDictionary new];
 	return self;
 }
 - (void)addIncludePath: (NSString*)includePath
@@ -402,6 +472,7 @@ static NSString *classNameFromCategory(CXCursor category)
 	if (NULL != translationUnit)
 	{
 		clang_disposeTranslationUnit(translationUnit);
+		translationUnit = NULL;
 		[self reparse];
 	}
 }
@@ -420,12 +491,19 @@ static NSString *classNameFromCategory(CXCursor category)
 	struct CXUnsavedFile unsaved[] = {
 		{fn, [[source string] UTF8String], [source length]},
 		{NULL, NULL, 0}};
-	//NSLog(@"File is %d chars long", [source length]);
+	int unsavedCount = (source == nil) ? 0 : 1;
+	const char *mainFile = fn;
+	if ([@"h" isEqualToString: [fileName pathExtension]])
+	{
+		unsaved[unsavedCount].Filename = "/tmp/foo.m";
+		unsaved[unsavedCount].Contents = [[NSString stringWithFormat: @"#import \"%@\"\n", fileName] UTF8String];
+		unsaved[unsavedCount].Length = strlen(unsaved[unsavedCount].Contents);
+		mainFile = unsaved[unsavedCount].Filename;
+		unsavedCount++;
+	}
 	file = NULL;
 	if (NULL == translationUnit)
 	{
-		//NSLog(@"Creating translation unit from file");
-		const char *mainFile = fn;
 		unsigned argc = [args count];
 		const char *argv[argc];
 		int i=0;
@@ -433,30 +511,19 @@ static NSString *classNameFromCategory(CXCursor category)
 		{
 			argv[i++] = [arg UTF8String];
 		}
-		int unsavedCount = 1;
-		if ([@"h" isEqualToString: [fileName pathExtension]])
-		{
-			unsaved[1].Filename = "/tmp/foo.m";
-			unsaved[1].Contents = [[NSString stringWithFormat: @"#import \"%@\"\n", fileName] UTF8String];
-			unsaved[1].Length = strlen(unsaved[1].Contents);
-			mainFile = unsaved[1].Filename;
-			unsavedCount = 2;
-		}
 		translationUnit =
-			clang_createTranslationUnitFromSourceFile(idx.clangIndex, fn, argc, argv, 0, unsaved);
-		/*
+			//clang_createTranslationUnitFromSourceFile(idx.clangIndex, fn, argc, argv, 0, unsaved);
 			clang_parseTranslationUnit(idx.clangIndex, mainFile, argv, argc, unsaved,
 					unsavedCount,
 					clang_defaultEditingTranslationUnitOptions());
 					//CXTranslationUnit_Incomplete);
-					*/
 		file = clang_getFile(translationUnit, fn);
 	}
 	else
 	{
 		clock_t c1 = clock();
-		// NSLog(@"Reparsing translation unit");
-		if (0 != clang_reparseTranslationUnit(translationUnit, 1, unsaved, clang_defaultReparseOptions(translationUnit)))
+		//NSLog(@"Reparsing translation unit");
+		if (0 != clang_reparseTranslationUnit(translationUnit, unsavedCount, unsaved, clang_defaultReparseOptions(translationUnit)))
 		{
 			clang_disposeTranslationUnit(translationUnit);
 			translationUnit = 0;
@@ -466,8 +533,10 @@ static NSString *classNameFromCategory(CXCursor category)
 			file = clang_getFile(translationUnit, fn);
 		}
 		clock_t c2 = clock();
-		//NSLog(@"Reparsing took %f seconds.  .",
-			//((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+		/*
+		NSLog(@"Reparsing took %f seconds.  .",
+			((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+		*/
 	}
 	[self rebuildIndex];
 }
