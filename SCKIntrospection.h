@@ -89,7 +89,7 @@
 /**
  * Returns the value of the enumeration.
  */
-@property long long value;
+@property long long longLongValue;
 /**
  * The name of the enumeration.
  */

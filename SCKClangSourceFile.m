@@ -417,13 +417,13 @@ static NSString *classNameFromCategory(CXCursor category)
 								v = [SCKEnumerationValue new];
 								v.name = vName;
 								v.declaration = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(enumCursor)];
-								v.value = clang_getEnumConstantDeclValue(enumCursor);
+								v.longLongValue = clang_getEnumConstantDeclValue(enumCursor);
 								[e.values setObject: v forKey: vName];
 							}
 							SCKEnumerationValue *ev = [enumerationValues objectForKey: vName];
 							if (ev)
 							{
-								if (ev.value != v.value)
+								if (ev.longLongValue != v.longLongValue)
 								{
 									[enumerationValues setObject: [NSMutableArray arrayWithObjects: v, ev, nil]
 									                      forKey: vName];

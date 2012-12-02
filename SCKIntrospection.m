@@ -133,9 +133,9 @@
 @synthesize values;
 @end
 @implementation SCKEnumerationValue
-@synthesize value, enumerationName;
+@synthesize longLongValue, enumerationName;
 - (NSString*)description
 {
-	return [NSString stringWithFormat: @"%@ (%lld)", self.name, value];
+	return [NSString stringWithFormat: @"%@ (%lld)", self.name, longLongValue];
 }
 @end
