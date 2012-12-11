@@ -32,12 +32,11 @@ ${FRAMEWORK_NAME}_RESOURCE_FILES = \
 	Resources/DefaultArguments.plist
 
 ${FRAMEWORK_NAME}_OBJCFLAGS = -fobjc-nonfragile-abi -fblocks -fobjc-arc
-${FRAMEWORK_NAME}_CPPFLAGS = -I`llvm-config --src-root`/tools/clang/include/ -DSCKKIT_INTERNAL
+${FRAMEWORK_NAME}_CPPFLAGS = -I`llvm-config --src-root`/tools/clang/include/ -I`llvm-config --includedir` -DSCKKIT_INTERNAL
 ${FRAMEWORK_NAME}_LDFLAGS = -L`llvm-config --libdir` -lclang -lstdc++
 
 CC=clang
 #CFLAGS += -load=/home/theraven/llvm/Debug+Asserts/lib/libGNUObjCRuntime.so -gnu-objc
-
 
 include $(GNUSTEP_MAKEFILES)/framework.make
 -include ../../etoile.make
