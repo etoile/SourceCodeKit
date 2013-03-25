@@ -1,6 +1,7 @@
 #import "SourceCodeKit.h"
 #import <Cocoa/Cocoa.h>
 #import <EtoileFoundation/EtoileFoundation.h>
+#include <objc/runtime.h>
 
 /**
  * Mapping from source file extensions to SCKSourceFile subclasses.

@@ -1,5 +1,6 @@
 #include <Foundation/NSObject.h>
 #include <Foundation/NSGeometry.h>
+#include <Foundation/NSRange.h>
 
 @class SCKIndex;
 @class NSMutableArray;

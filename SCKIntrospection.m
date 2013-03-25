@@ -1,5 +1,6 @@
-#import "SourceCodeKit.h"
+#import "SCKIntrospection.h"
 #import <EtoileFoundation/EtoileFoundation.h>
+#include <objc/runtime.h>
 
 @implementation SCKProgramComponent
 @synthesize parent, declaration, definition, documentation, name;

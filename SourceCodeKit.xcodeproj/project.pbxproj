@@ -1,0 +1,423 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		609CFDB916FFD31700D01AAB /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFDB816FFD31700D01AAB /* Cocoa.framework */; };
+		609CFDE216FFD38D00D01AAB /* SCKClangSourceFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDD116FFD38D00D01AAB /* SCKClangSourceFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFDE316FFD38D00D01AAB /* SCKClangSourceFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDD216FFD38D00D01AAB /* SCKClangSourceFile.m */; };
+		609CFDE416FFD38D00D01AAB /* SCKCodeCompletionResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDD316FFD38D00D01AAB /* SCKCodeCompletionResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFDE516FFD38D00D01AAB /* SCKCodeCompletionResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDD416FFD38D00D01AAB /* SCKCodeCompletionResult.m */; };
+		609CFDE616FFD38D00D01AAB /* SCKIntrospection.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDD516FFD38D00D01AAB /* SCKIntrospection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFDE716FFD38D00D01AAB /* SCKIntrospection.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDD616FFD38D00D01AAB /* SCKIntrospection.m */; };
+		609CFDEA16FFD38D00D01AAB /* SCKSourceCollection.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDD916FFD38D00D01AAB /* SCKSourceCollection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFDEB16FFD38D00D01AAB /* SCKSourceCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDDA16FFD38D00D01AAB /* SCKSourceCollection.m */; };
+		609CFDEC16FFD38D00D01AAB /* SCKSourceFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDDB16FFD38D00D01AAB /* SCKSourceFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFDED16FFD38D00D01AAB /* SCKSourceFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDDC16FFD38D00D01AAB /* SCKSourceFile.m */; };
+		609CFDEE16FFD38D00D01AAB /* SCKSyntaxHighlighter.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDDD16FFD38D00D01AAB /* SCKSyntaxHighlighter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFDEF16FFD38D00D01AAB /* SCKSyntaxHighlighter.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDDE16FFD38D00D01AAB /* SCKSyntaxHighlighter.m */; };
+		609CFDF016FFD38D00D01AAB /* SCKTextTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDDF16FFD38D00D01AAB /* SCKTextTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFDF116FFD38D00D01AAB /* SCKTextTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDE016FFD38D00D01AAB /* SCKTextTypes.m */; };
+		609CFDF216FFD38D00D01AAB /* SourceCodeKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDE116FFD38D00D01AAB /* SourceCodeKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		609CFE6C16FFD83100D01AAB /* EtoileFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE5116FFD81300D01AAB /* EtoileFoundation.framework */; };
+		609CFE7016FFDE7F00D01AAB /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE6F16FFDE7F00D01AAB /* libclang.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		609CFE4E16FFD81300D01AAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 60073EAD10074D26007272E6;
+			remoteInfo = EtoileXML;
+		};
+		609CFE5016FFD81300D01AAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 603647AC0E409244003377E0;
+			remoteInfo = EtoileFoundation;
+		};
+		609CFE5216FFD81300D01AAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 609B66D70FEE80CE0007F842;
+			remoteInfo = TestEtoileFoundation;
+		};
+		609CFE5416FFD81300D01AAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6072CF691360E144003256C5;
+			remoteInfo = PlugInExample;
+		};
+		609CFE6A16FFD82B00D01AAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 603647AB0E409244003377E0;
+			remoteInfo = EtoileFoundation;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		609CFDB516FFD31700D01AAB /* SourceCodeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SourceCodeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		609CFDB816FFD31700D01AAB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		609CFDBB16FFD31700D01AAB /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		609CFDBC16FFD31700D01AAB /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		609CFDBD16FFD31700D01AAB /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		609CFDD116FFD38D00D01AAB /* SCKClangSourceFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKClangSourceFile.h; sourceTree = "<group>"; };
+		609CFDD216FFD38D00D01AAB /* SCKClangSourceFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKClangSourceFile.m; sourceTree = "<group>"; };
+		609CFDD316FFD38D00D01AAB /* SCKCodeCompletionResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKCodeCompletionResult.h; sourceTree = "<group>"; };
+		609CFDD416FFD38D00D01AAB /* SCKCodeCompletionResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKCodeCompletionResult.m; sourceTree = "<group>"; };
+		609CFDD516FFD38D00D01AAB /* SCKIntrospection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKIntrospection.h; sourceTree = "<group>"; };
+		609CFDD616FFD38D00D01AAB /* SCKIntrospection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKIntrospection.m; sourceTree = "<group>"; };
+		609CFDD716FFD38D00D01AAB /* SCKProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKProject.h; sourceTree = "<group>"; };
+		609CFDD816FFD38D00D01AAB /* SCKProject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKProject.m; sourceTree = "<group>"; };
+		609CFDD916FFD38D00D01AAB /* SCKSourceCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKSourceCollection.h; sourceTree = "<group>"; };
+		609CFDDA16FFD38D00D01AAB /* SCKSourceCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKSourceCollection.m; sourceTree = "<group>"; };
+		609CFDDB16FFD38D00D01AAB /* SCKSourceFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKSourceFile.h; sourceTree = "<group>"; };
+		609CFDDC16FFD38D00D01AAB /* SCKSourceFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKSourceFile.m; sourceTree = "<group>"; };
+		609CFDDD16FFD38D00D01AAB /* SCKSyntaxHighlighter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKSyntaxHighlighter.h; sourceTree = "<group>"; };
+		609CFDDE16FFD38D00D01AAB /* SCKSyntaxHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKSyntaxHighlighter.m; sourceTree = "<group>"; };
+		609CFDDF16FFD38D00D01AAB /* SCKTextTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKTextTypes.h; sourceTree = "<group>"; };
+		609CFDE016FFD38D00D01AAB /* SCKTextTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKTextTypes.m; sourceTree = "<group>"; };
+		609CFDE116FFD38D00D01AAB /* SourceCodeKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceCodeKit.h; sourceTree = "<group>"; };
+		609CFDF316FFD74B00D01AAB /* SourceCodeKit-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "SourceCodeKit-Info.plist"; sourceTree = SOURCE_ROOT; };
+		609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = EtoileFoundation.xcodeproj; path = ../../Frameworks/EtoileFoundation/EtoileFoundation.xcodeproj; sourceTree = "<group>"; };
+		609CFE6F16FFDE7F00D01AAB /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		609CFDB116FFD31700D01AAB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				609CFE6C16FFD83100D01AAB /* EtoileFoundation.framework in Frameworks */,
+				609CFDB916FFD31700D01AAB /* Cocoa.framework in Frameworks */,
+				609CFE7016FFDE7F00D01AAB /* libclang.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		609CFDA916FFD31700D01AAB = {
+			isa = PBXGroup;
+			children = (
+				609CFDD116FFD38D00D01AAB /* SCKClangSourceFile.h */,
+				609CFDD216FFD38D00D01AAB /* SCKClangSourceFile.m */,
+				609CFDD316FFD38D00D01AAB /* SCKCodeCompletionResult.h */,
+				609CFDD416FFD38D00D01AAB /* SCKCodeCompletionResult.m */,
+				609CFDD516FFD38D00D01AAB /* SCKIntrospection.h */,
+				609CFDD616FFD38D00D01AAB /* SCKIntrospection.m */,
+				609CFDD716FFD38D00D01AAB /* SCKProject.h */,
+				609CFDD816FFD38D00D01AAB /* SCKProject.m */,
+				609CFDD916FFD38D00D01AAB /* SCKSourceCollection.h */,
+				609CFDDA16FFD38D00D01AAB /* SCKSourceCollection.m */,
+				609CFDDB16FFD38D00D01AAB /* SCKSourceFile.h */,
+				609CFDDC16FFD38D00D01AAB /* SCKSourceFile.m */,
+				609CFDDD16FFD38D00D01AAB /* SCKSyntaxHighlighter.h */,
+				609CFDDE16FFD38D00D01AAB /* SCKSyntaxHighlighter.m */,
+				609CFDDF16FFD38D00D01AAB /* SCKTextTypes.h */,
+				609CFDE016FFD38D00D01AAB /* SCKTextTypes.m */,
+				609CFDE116FFD38D00D01AAB /* SourceCodeKit.h */,
+				609CFDBF16FFD31700D01AAB /* Supporting Files */,
+				609CFDB716FFD31700D01AAB /* Frameworks */,
+				609CFDB616FFD31700D01AAB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		609CFDB616FFD31700D01AAB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				609CFDB516FFD31700D01AAB /* SourceCodeKit.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		609CFDB716FFD31700D01AAB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */,
+				609CFE6F16FFDE7F00D01AAB /* libclang.dylib */,
+				609CFDB816FFD31700D01AAB /* Cocoa.framework */,
+				609CFDBA16FFD31700D01AAB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		609CFDBA16FFD31700D01AAB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				609CFDBB16FFD31700D01AAB /* AppKit.framework */,
+				609CFDBC16FFD31700D01AAB /* CoreData.framework */,
+				609CFDBD16FFD31700D01AAB /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		609CFDBF16FFD31700D01AAB /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				609CFDF316FFD74B00D01AAB /* SourceCodeKit-Info.plist */,
+			);
+			name = "Supporting Files";
+			path = SourceCodeKit;
+			sourceTree = "<group>";
+		};
+		609CFE4016FFD81200D01AAB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				609CFE4F16FFD81300D01AAB /* EtoileXML.framework */,
+				609CFE5116FFD81300D01AAB /* EtoileFoundation.framework */,
+				609CFE5316FFD81300D01AAB /* TestEtoileFoundation.bundle */,
+				609CFE5516FFD81300D01AAB /* PlugInExample.plugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		609CFDB216FFD31700D01AAB /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				609CFDE216FFD38D00D01AAB /* SCKClangSourceFile.h in Headers */,
+				609CFDE416FFD38D00D01AAB /* SCKCodeCompletionResult.h in Headers */,
+				609CFDE616FFD38D00D01AAB /* SCKIntrospection.h in Headers */,
+				609CFDEA16FFD38D00D01AAB /* SCKSourceCollection.h in Headers */,
+				609CFDEC16FFD38D00D01AAB /* SCKSourceFile.h in Headers */,
+				609CFDEE16FFD38D00D01AAB /* SCKSyntaxHighlighter.h in Headers */,
+				609CFDF016FFD38D00D01AAB /* SCKTextTypes.h in Headers */,
+				609CFDF216FFD38D00D01AAB /* SourceCodeKit.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		609CFDB416FFD31700D01AAB /* SourceCodeKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 609CFDCA16FFD31800D01AAB /* Build configuration list for PBXNativeTarget "SourceCodeKit" */;
+			buildPhases = (
+				609CFDB016FFD31700D01AAB /* Sources */,
+				609CFDB116FFD31700D01AAB /* Frameworks */,
+				609CFDB216FFD31700D01AAB /* Headers */,
+				609CFDB316FFD31700D01AAB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				609CFE6B16FFD82B00D01AAB /* PBXTargetDependency */,
+			);
+			name = SourceCodeKit;
+			productName = SourceCodeKit;
+			productReference = 609CFDB516FFD31700D01AAB /* SourceCodeKit.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		609CFDAB16FFD31700D01AAB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = "Étoilé";
+			};
+			buildConfigurationList = 609CFDAE16FFD31700D01AAB /* Build configuration list for PBXProject "SourceCodeKit" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 609CFDA916FFD31700D01AAB;
+			productRefGroup = 609CFDB616FFD31700D01AAB /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 609CFE4016FFD81200D01AAB /* Products */;
+					ProjectRef = 609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				609CFDB416FFD31700D01AAB /* SourceCodeKit */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		609CFE4F16FFD81300D01AAB /* EtoileXML.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = EtoileXML.framework;
+			remoteRef = 609CFE4E16FFD81300D01AAB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		609CFE5116FFD81300D01AAB /* EtoileFoundation.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = EtoileFoundation.framework;
+			remoteRef = 609CFE5016FFD81300D01AAB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		609CFE5316FFD81300D01AAB /* TestEtoileFoundation.bundle */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = TestEtoileFoundation.bundle;
+			remoteRef = 609CFE5216FFD81300D01AAB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		609CFE5516FFD81300D01AAB /* PlugInExample.plugin */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = PlugInExample.plugin;
+			remoteRef = 609CFE5416FFD81300D01AAB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		609CFDB316FFD31700D01AAB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		609CFDB016FFD31700D01AAB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				609CFDE316FFD38D00D01AAB /* SCKClangSourceFile.m in Sources */,
+				609CFDE516FFD38D00D01AAB /* SCKCodeCompletionResult.m in Sources */,
+				609CFDE716FFD38D00D01AAB /* SCKIntrospection.m in Sources */,
+				609CFDEB16FFD38D00D01AAB /* SCKSourceCollection.m in Sources */,
+				609CFDED16FFD38D00D01AAB /* SCKSourceFile.m in Sources */,
+				609CFDEF16FFD38D00D01AAB /* SCKSyntaxHighlighter.m in Sources */,
+				609CFDF116FFD38D00D01AAB /* SCKTextTypes.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		609CFE6B16FFD82B00D01AAB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = EtoileFoundation;
+			targetProxy = 609CFE6A16FFD82B00D01AAB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		609CFDC816FFD31800D01AAB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_WARN_OBJCPP_ARC_ABI = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
+				WARNING_CFLAGS = "-Wall";
+			};
+			name = Debug;
+		};
+		609CFDC916FFD31800D01AAB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_WARN_OBJCPP_ARC_ABI = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
+				WARNING_CFLAGS = "-Wall";
+			};
+			name = Release;
+		};
+		609CFDCB16FFD31800D01AAB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
+				INFOPLIST_FILE = "SourceCodeKit-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib\"",
+				);
+				OTHER_LDFLAGS = "-lclang";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Debug;
+		};
+		609CFDCC16FFD31800D01AAB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
+				INFOPLIST_FILE = "SourceCodeKit-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib\"",
+				);
+				OTHER_LDFLAGS = "-lclang";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		609CFDAE16FFD31700D01AAB /* Build configuration list for PBXProject "SourceCodeKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				609CFDC816FFD31800D01AAB /* Debug */,
+				609CFDC916FFD31800D01AAB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		609CFDCA16FFD31800D01AAB /* Build configuration list for PBXNativeTarget "SourceCodeKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				609CFDCB16FFD31800D01AAB /* Debug */,
+				609CFDCC16FFD31800D01AAB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 609CFDAB16FFD31700D01AAB /* Project object */;
+}
