@@ -1,0 +1,73 @@
+SourceCodeKit INSTALL
+=====================
+
+Required software
+-----------------
+
+You need to have the GNUstep core libraries installed in order to compile and 
+use SourceCodeKit. The core packages are, at a minimum:
+
+   * gnustep-make
+
+   * gnustep-base
+
+See <http://www.gnustep.org/> for further information.
+
+You also need to have the libclang library (along its headers) installed:
+
+    * libclang
+
+See <http://clang.llvm.org/>
+
+Finally you need from Etoile itself:
+
+   * EtoileFoundation, which can be found in Etoile/Frameworks/EtoileFoundation
+
+These last dependency is automatically handled when DocGenerator is built by 
+running 'make' tool in the root 'Etoile' directory.
+
+
+Build and Install
+-----------------
+
+Square brackets "[ ]" are used to indicate optional parameters.
+
+If the whole Etoile repository is compiled on GNUstep, libclang is usually 
+installed, because Etoile depends on LLVM/Clang (as an Objective-C compiler and 
+for LanguageKit).
+
+   Steps to build:
+
+   * make
+
+   * [sudo [-E]] make install
+
+
+Mac OS X support
+----------------
+
+**Warning:** Xcode 4 is required to build the project.
+
+For Mac OS X, you must check out or download LLVM/Clang source code. You don't 
+have to compile Clang, but the Xcode project requires libclang headers that are 
+are not packaged inside the Xcode application bundle.
+
+For the record, the built-in libclang from Xcode is presently located at: 
+
+<em>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib</em>
+
+To check out the Clang repository, launch the Terminal, in the shell just do:
+
+	svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
+	cd <path to SourceCodeKit>
+	ln -s clang-c <path to Clang repository>/include/clang-c .
+	
+This should create a local symbolic link pointing to the Clang headers. That's 
+all you need to build the SourceCodeKit target.
+
+
+Trouble
+-------
+
+Give us feedback! Tell us what you like; tell us what you think
+could be better. Send bug reports and patches to <etoile-track@gna.org>.
