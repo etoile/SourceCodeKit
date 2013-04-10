@@ -91,6 +91,8 @@
 		609CFDF316FFD74B00D01AAB /* SourceCodeKit-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "SourceCodeKit-Info.plist"; sourceTree = SOURCE_ROOT; };
 		609CFE3F16FFD81200D01AAB /* EtoileFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = EtoileFoundation.xcodeproj; path = ../../Frameworks/EtoileFoundation/EtoileFoundation.xcodeproj; sourceTree = "<group>"; };
 		609CFE6F16FFDE7F00D01AAB /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib; sourceTree = DEVELOPER_DIR; };
+		609CFEDC17006ADD00D01AAB /* INSTALL */ = {isa = PBXFileReference; lastKnownFileType = text; path = INSTALL; sourceTree = "<group>"; };
+		609CFEDD17006ADE00D01AAB /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,8 @@
 		609CFDA916FFD31700D01AAB = {
 			isa = PBXGroup;
 			children = (
+				609CFEDD17006ADE00D01AAB /* README */,
+				609CFEDC17006ADD00D01AAB /* INSTALL */,
 				609CFDD116FFD38D00D01AAB /* SCKClangSourceFile.h */,
 				609CFDD216FFD38D00D01AAB /* SCKClangSourceFile.m */,
 				609CFDD316FFD38D00D01AAB /* SCKCodeCompletionResult.h */,
