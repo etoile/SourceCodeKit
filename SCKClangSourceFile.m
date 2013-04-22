@@ -236,6 +236,27 @@ static NSString *classNameFromCategory(CXCursor category)
 	return className;
 }
 
+- (SCKClass*)classForName: (NSString*)className
+{
+	SCKClass *class = [classes objectForKey: className];
+
+	if (Nil == class)
+	{
+		class = [SCKClass new];
+		[class setName: className];
+		[classes setObject: class forKey: className];
+	}
+	return class;
+}
+
+- (void)didParseClassNamed: (NSString*)aClassName
+            superclassName: (NSString*)aSuperclassName
+                atLocation: (SCKSourceLocation*)aLocation
+{
+	SCKClass *class = [self classForName: aClassName];
+	[class setSuperclass: [self classForName: aSuperclassName]];
+}
+
 - (void)setLocation: (SCKSourceLocation*)aLocation
           forMethod: (NSString*)methodName
             inClass: (NSString*)className
@@ -321,23 +342,55 @@ static NSString *classNameFromCategory(CXCursor category)
 #endif
 					break;
 				}
+				case CXCursor_ObjCInterfaceDecl:
+				{
+					SCKSourceLocation *classLoc = [[SCKSourceLocation alloc]
+						initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+					SCOPED_STR(className, clang_getCursorSpelling(cursor));
+
+					clang_visitChildrenWithBlock(cursor,
+						^ enum CXChildVisitResult (CXCursor classCursor, CXCursor parent)
+						{
+							if (CXCursor_ObjCInstanceMethodDecl == classCursor.kind)
+							{
+								SCOPED_STR(methodName, clang_getCursorSpelling(classCursor));
+								SCKSourceLocation *methodLoc = [[SCKSourceLocation alloc]
+									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+
+								[self setLocation: methodLoc
+								        forMethod: [NSString stringWithUTF8String: methodName]
+								          inClass: [NSString stringWithUTF8String: className]
+								         category: nil
+								     isDefinition: clang_isCursorDefinition(classCursor)];
+							}
+							else if (CXCursor_ObjCSuperClassRef == classCursor.kind)
+							{
+								SCOPED_STR(superclassName, clang_getCursorSpelling(classCursor));
+
+								[self didParseClassNamed: [NSString stringWithUTF8String: className]
+								          superclassName: [NSString stringWithUTF8String: superclassName]
+								              atLocation: classLoc];
+							}
+							return CXChildVisit_Continue;
+						});
+					break;
+				}
 				case CXCursor_ObjCImplementationDecl:
 				{
 					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
-						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
+						^ enum CXChildVisitResult (CXCursor classCursor, CXCursor parent)
 						{
-							if (CXCursor_ObjCInstanceMethodDecl == cursor.kind)
+							if (CXCursor_ObjCInstanceMethodDecl == classCursor.kind)
 							{
 								SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
 								SCOPED_STR(className, clang_getCursorSpelling(parent));
-								//clang_visitChildren((parent), findClass, NULL);
 								SCKSourceLocation *l = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
 								[self setLocation: l
 								        forMethod: [NSString stringWithUTF8String: methodName]
 								          inClass: [NSString stringWithUTF8String: className]
 								         category: nil
-								     isDefinition: clang_isCursorDefinition(cursor)];
+								     isDefinition: clang_isCursorDefinition(classCursor)];
 							}
 							return CXChildVisit_Continue;
 						});
@@ -345,15 +398,15 @@ static NSString *classNameFromCategory(CXCursor category)
 				}
 				case CXCursor_ObjCCategoryImplDecl:
 				{
-					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
-						^ enum CXChildVisitResult (CXCursor cursor, CXCursor parent)
+					clang_visitChildrenWithBlock(cursor,
+						^ enum CXChildVisitResult (CXCursor categoryCursor, CXCursor parent)
 					{
-						if (CXCursor_ObjCInstanceMethodDecl == cursor.kind)
+						if (CXCursor_ObjCInstanceMethodDecl == categoryCursor.kind)
 						{
-							SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
+							SCOPED_STR(methodName, clang_getCursorSpelling(categoryCursor));
 							SCOPED_STR(categoryName, clang_getCursorSpelling(parent));
 							NSString *className = classNameFromCategory(parent);
-							SCKSourceLocation *l = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+							SCKSourceLocation *l = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(categoryCursor)];
 							[self setLocation: l
 							        forMethod: [NSString stringWithUTF8String: methodName]
 							          inClass: className
@@ -487,6 +540,8 @@ static NSString *classNameFromCategory(CXCursor category)
 
 - (void)reparse
 {
+	//NSLog(@" ---> Parsing %@", [fileName lastPathComponent]);
+
 	const char *fn = [fileName UTF8String];
 	struct CXUnsavedFile unsaved[] = {
 		{fn, [[source string] UTF8String], [source length]},
