@@ -38,7 +38,7 @@
 /** 
  * Returns the URLs of the files that belong to the project.
  */
-@property (nonatomic, readonly) NSURL *fileURLs;
+@property (nonatomic, readonly) NSArray *fileURLs;
 
 /**
  * Adds the file that corresponds to the URL to the project.

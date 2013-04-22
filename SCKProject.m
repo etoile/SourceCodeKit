@@ -1,5 +1,5 @@
 #import "SCKProject.h"
-#import "SCKFile.h"
+#import "SCKSourceFile.h"
 #import "SCKSourceCollection.h"
 
 @implementation SCKProject
