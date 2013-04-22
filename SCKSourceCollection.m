@@ -15,11 +15,11 @@ static NSDictionary *fileClasses;
 + (void)initialize
 {
 	Class clang = NSClassFromString(@"SCKClangSourceFile");
-	ASSIGN(fileClasses, D(clang, @"m",
-	                      clang, @"cc",
-	                      clang, @"c",
-	                      clang, @"h",
-	                      clang, @"cpp"));
+	fileClasses = D(clang, @"m",
+	                clang, @"cc",
+	                clang, @"c",
+	                clang, @"h",
+	                clang, @"cpp");
 }
 - (id)init
 {

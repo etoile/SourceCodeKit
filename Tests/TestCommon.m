@@ -28,10 +28,4 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	DESTROY(sourceCollection);
-	[super dealloc];
-}
-
 @end

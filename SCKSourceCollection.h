@@ -1,9 +1,7 @@
 #import <Foundation/NSObject.h>
 
-@class NSCache;
-@class NSMutableDictionary;
-@class SCKIndex;
-@class SCKSourceFile;
+@class NSCache, NSMutableDictionary, NSArray;
+@class SCKIndex, SCKSourceFile;
 
 /**
  * A source collection encapsulates a group of (potentially cross-referenced)
