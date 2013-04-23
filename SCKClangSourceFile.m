@@ -189,7 +189,8 @@ NSArray *GNUstepIncludeDirectories()
 		[defaultArguments addObjectsFromArray: gsIncludeDirs];
 	}
 #	endif
-
+	[defaultArguments addObject: @"-I/usr/lib/gcc/i686-linux-gnu/4.6/include-fixed/"];
+	[defaultArguments addObject: @"-I/usr/lib/gcc/i686-linux-gnu/4.6/include/"];
 	return self;
 }
 - (void)dealloc
@@ -658,7 +659,7 @@ static NSString *classNameFromCategory(CXCursor category)
 	}
 	else
 	{
-		__unused clock_t c1 = clock();
+		clock_t c1 = clock();
 		//NSLog(@"Reparsing translation unit");
 		if (0 != clang_reparseTranslationUnit(translationUnit, unsavedCount, unsaved, clang_defaultReparseOptions(translationUnit)))
 		{
@@ -669,7 +670,7 @@ static NSString *classNameFromCategory(CXCursor category)
 		{
 			file = clang_getFile(translationUnit, fn);
 		}
-		__unused clock_t c2 = clock();
+		clock_t c2 = clock();
 		//NSLog(@"Reparsing took %f seconds.",((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 	}
 	[self rebuildIndex];
@@ -765,9 +766,9 @@ static NSString *classNameFromCategory(CXCursor category)
 		clang_getLocationForOffset(translationUnit, file, (unsigned int)r.location);
 	CXSourceLocation end = clang_getLocationForOffset(translationUnit, file,
 		(unsigned int)(r.location + r.length));
-	__unused clock_t c1 = clock();
+	clock_t c1 = clock();
 	[self highlightRange: clang_getRange(start, end) syntax: YES];
-	__unused clock_t c2 = clock();
+	clock_t c2 = clock();
 	//NSLog(@"Highlighting took %f seconds.", ((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 }
 - (void)syntaxHighlightFile

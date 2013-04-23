@@ -39,7 +39,7 @@ static NSDictionary *noAttributes;
 
 - (void)transformString: (NSMutableAttributedString*)source;
 {
-	__unused clock_t c1 = clock();
+	clock_t c1 = clock();
 	NSUInteger end = [source length];
 	NSUInteger i = 0;
 	NSRange r;
@@ -88,7 +88,7 @@ static NSDictionary *noAttributes;
 			               range: r];
 		}
 	} while (i < end);
-	__unused clock_t c2 = clock();
+	clock_t c2 = clock();
 	//NSLog(@"Generating presentation markup took %f seconds.  .",
 //		((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 }
