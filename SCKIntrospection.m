@@ -35,7 +35,7 @@
 @end
 
 @implementation SCKClass
-@synthesize subclasses, superclass, categories, methods, ivars;
+@synthesize subclasses, superclass, categories, methods, ivars, properties;
 - (NSString*)description
 {
 	NSMutableString *str = [self.name mutableCopy];
@@ -56,6 +56,7 @@
 	categories = [NSMutableDictionary new];
 	methods = [NSMutableDictionary new];
 	ivars = [NSMutableArray new];
+    properties = [NSMutableArray new];
 	return self;
 }
 - (id)initWithClass: (Class)cls
@@ -91,7 +92,21 @@
 	{
 		free(methodList);
 	}
-	self.name = [[NSString alloc] initWithUTF8String: class_getName(cls)];
+    
+    objc_property_t *propertyList = class_copyPropertyList(cls, &count);
+    for (unsigned int i=0 ; i<count; i++)
+    {
+        STACK_SCOPED SCKProperty *property = [SCKProperty new];
+        [property setName: [NSString stringWithUTF8String: property_getName(propertyList[i])]];
+        [property setParent: self];
+        [properties addObject: property];
+    }
+    if (count>0)
+    {
+        free(propertyList);
+    }
+    
+    self.name = [[NSString alloc] initWithUTF8String: class_getName(cls)];    
 	return self;
 }
 @end
@@ -130,6 +145,8 @@
 @implementation SCKIvar @end
 @implementation SCKFunction @end
 @implementation SCKGlobal @end
+@implementation SCKProperty @end
+@implementation SCKMacro @end
 @implementation SCKEnumeration
 @synthesize values;
 @end

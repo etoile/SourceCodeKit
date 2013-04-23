@@ -151,7 +151,7 @@ NSArray *GNUstepIncludeDirectories()
 @interface SCKClangIndex : NSObject
 @property (readonly) CXIndex clangIndex;
 //FIXME: We should have different default arguments for C, C++ and ObjC.
-@property ( nonatomic) NSMutableArray *defaultArguments;
+@property (nonatomic, copy) NSMutableArray *defaultArguments;
 @end
 
 
@@ -203,7 +203,7 @@ NSArray *GNUstepIncludeDirectories()
 
 @implementation SCKClangSourceFile
 
-@synthesize classes, functions, globals, enumerations, enumerationValues;
+@synthesize classes, functions, globals, enumerations, enumerationValues, properties, macros;
 
 /*
 static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
@@ -325,6 +325,44 @@ static NSString *classNameFromCategory(CXCursor category)
 	[dict setObject: global forKey: symbol];
 }
 
+#if CINDEX_VERSION < 18
+#define CXObjCPropertyAttrKind int
+#endif
+
+- (void)setLocation: (SCKSourceLocation*)sourceLocation
+        forProperty: (NSString*)nameOfProperty
+           withType: (NSString*)typeOfProperty
+         attributes: (CXObjCPropertyAttrKind)attributesOfProperty
+         isIBOutlet: (BOOL)isOBOutlet
+{
+    SCKProperty *property = [properties objectForKey: nameOfProperty];
+    if (nil == property)
+	{
+        property = [SCKProperty new];
+        [property setName: nameOfProperty];
+        [properties setObject: property forKey: nameOfProperty];
+    }
+    
+    [property setDefinition: sourceLocation];
+    [property setDeclaration: sourceLocation];
+}
+
+- (void)setLocation: (SCKSourceLocation*)sourceLocation
+           forMacro: (NSString*)macroName
+         withTokens: (NSArray*)tokens
+{
+    SCKMacro *macro = [macros objectForKey: macroName];
+    if (nil == macro)
+	{
+        macro = [SCKMacro new];
+        [macro setName: macroName];
+        [macros setObject: macro forKey: macroName];
+    }
+    
+    [macro setDefinition: sourceLocation];
+    [macro setDeclaration: sourceLocation];
+}
+
 - (void)rebuildIndex
 {
 	if (0 == translationUnit) { return; }
@@ -433,10 +471,54 @@ static NSString *classNameFromCategory(CXCursor category)
 					}
 					break;
 				}
-				case CXCursor_EnumDecl:
+                case CXCursor_ObjCPropertyDecl:
+                {
+					SCOPED_STR(name, clang_getCursorSpelling(cursor));
+					SCOPED_STR(type, clang_getCursorKindSpelling(clang_getCursorKind(cursor)));
+					CXObjCPropertyAttrKind attributes = 0;
+#if CINDEX_VERSION >= 18
+					attributes = clang_Cursor_getObjCPropertyAttributes(cursor, 0);
+#endif
+					BOOL isIBOutlet = (CXCursor_IBOutletAttr == cursor.kind);
+					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+
+					[self setLocation: sourceLocation
+					      forProperty: [NSString stringWithUTF8String: name]
+					         withType: [NSString stringWithUTF8String: type]
+					       attributes: attributes
+					       isIBOutlet: isIBOutlet];
+                    break;
+                }
+                case CXCursor_MacroDefinition:
+                {
+					SCOPED_STR(macroName, clang_getCursorSpelling(cursor));
+					NSMutableArray *tokenNames = [NSMutableArray array];
+					CXSourceRange sourceRange = clang_getCursorExtent(cursor);
+					CXToken *tokens;
+					unsigned int count = 0;
+
+					clang_tokenize(translationUnit, sourceRange, &tokens, &count);
+
+					for (int i = 0; i < count; i++)
+					{
+						SCOPED_STR(tokenName, clang_getTokenSpelling(translationUnit, tokens[i]));
+						[tokenNames addObject: [NSString stringWithUTF8String: tokenName]];
+						// FIXME: clang_disposeString(tokenSpelling);
+					}
+					// FIXME: clang_disposeTokens(translationUnit, tokens, num);
+
+					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
+						initWithClangSourceLocation:clang_getCursorLocation(cursor)];
+
+					[self setLocation: sourceLocation
+					         forMacro: [NSString stringWithUTF8String: macroName]
+					       withTokens: tokenNames];
+					break;
+                }
+                case CXCursor_EnumDecl:
 				{
 					SCOPED_STR(enumName, clang_getCursorSpelling(cursor));
-					SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
+					//SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
 					NSString *name = [NSString stringWithUTF8String: enumName];
 					SCKEnumeration *e = [enumerations objectForKey: name];
 					__block BOOL foundType;
@@ -559,7 +641,7 @@ static NSString *classNameFromCategory(CXCursor category)
 	file = NULL;
 	if (NULL == translationUnit)
 	{
-		unsigned argc = [args count];
+		unsigned argc = (unsigned)[args count];
 		const char *argv[argc];
 		int i=0;
 		for (NSString *arg in args)
@@ -576,7 +658,7 @@ static NSString *classNameFromCategory(CXCursor category)
 	}
 	else
 	{
-		clock_t c1 = clock();
+		__unused clock_t c1 = clock();
 		//NSLog(@"Reparsing translation unit");
 		if (0 != clang_reparseTranslationUnit(translationUnit, unsavedCount, unsaved, clang_defaultReparseOptions(translationUnit)))
 		{
@@ -587,18 +669,15 @@ static NSString *classNameFromCategory(CXCursor category)
 		{
 			file = clang_getFile(translationUnit, fn);
 		}
-		clock_t c2 = clock();
-		/*
-		NSLog(@"Reparsing took %f seconds.  .",
-			((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
-		*/
+		__unused clock_t c2 = clock();
+		//NSLog(@"Reparsing took %f seconds.",((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 	}
 	[self rebuildIndex];
 }
 - (void)lexicalHighlightFile
 {
 	CXSourceLocation start = clang_getLocation(translationUnit, file, 1, 1);
-	CXSourceLocation end = clang_getLocationForOffset(translationUnit, file, [source length]);
+	CXSourceLocation end = clang_getLocationForOffset(translationUnit, file, (unsigned int)[source length]);
 	[self highlightRange: clang_getRange(start, end) syntax: NO];
 }
 
@@ -682,13 +761,14 @@ static NSString *classNameFromCategory(CXCursor category)
 }
 - (void)syntaxHighlightRange: (NSRange)r
 {
-	CXSourceLocation start = clang_getLocationForOffset(translationUnit, file, r.location);
-	CXSourceLocation end = clang_getLocationForOffset(translationUnit, file, r.location + r.length);
-	clock_t c1 = clock();
+	CXSourceLocation start =
+		clang_getLocationForOffset(translationUnit, file, (unsigned int)r.location);
+	CXSourceLocation end = clang_getLocationForOffset(translationUnit, file,
+		(unsigned int)(r.location + r.length));
+	__unused clock_t c1 = clock();
 	[self highlightRange: clang_getRange(start, end) syntax: YES];
-	clock_t c2 = clock();
-	//NSLog(@"Highlighting took %f seconds.  .",
-		//((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
+	__unused clock_t c2 = clock();
+	//NSLog(@"Highlighting took %f seconds.", ((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 }
 - (void)syntaxHighlightFile
 {
@@ -698,7 +778,7 @@ static NSString *classNameFromCategory(CXCursor category)
 {
 	// NSLog(@"Collecting diagnostics");
 	unsigned diagnosticCount = clang_getNumDiagnostics(translationUnit);
-	unsigned opts = clang_defaultDiagnosticDisplayOptions();
+	// unsigned opts = clang_defaultDiagnosticDisplayOptions();
 	// NSLog(@"%d diagnostics found", diagnosticCount);
 	for (unsigned i=0 ; i<diagnosticCount ; i++)
 	{
