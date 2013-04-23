@@ -621,6 +621,8 @@ static NSString *classNameFromCategory(CXCursor category)
 	}
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused"
 - (void)reparse
 {
 	//NSLog(@" ---> Parsing %@", [fileName lastPathComponent]);
@@ -675,6 +677,8 @@ static NSString *classNameFromCategory(CXCursor category)
 	}
 	[self rebuildIndex];
 }
+#pragma clang diagnostic push
+
 - (void)lexicalHighlightFile
 {
 	CXSourceLocation start = clang_getLocation(translationUnit, file, 1, 1);

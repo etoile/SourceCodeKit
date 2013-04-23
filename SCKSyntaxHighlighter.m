@@ -37,6 +37,8 @@ static NSDictionary *noAttributes;
 	return self;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused"
 - (void)transformString: (NSMutableAttributedString*)source;
 {
 	clock_t c1 = clock();
@@ -92,5 +94,7 @@ static NSDictionary *noAttributes;
 	//NSLog(@"Generating presentation markup took %f seconds.  .",
 //		((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 }
+#pragma clang diagnostic pop
+
 @end
 
