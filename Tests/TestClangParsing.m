@@ -9,8 +9,7 @@
 
 - (void)testClass
 {
-	SCKClangSourceFile *sourceFile = [[sourceCollection sourceFiles] firstObject];
-	SCKClass *class = [[sourceFile classes] objectForKey: @"A"];
+	SCKClass *class = [[sourceCollection classes] objectForKey: @"A"];
 	
 	UKNotNil(class);
 	UKStringsEqual(@"A", [class name]);
