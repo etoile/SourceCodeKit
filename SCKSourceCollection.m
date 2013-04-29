@@ -97,6 +97,16 @@ static NSDictionary *fileClasses;
 	return [self programComponentsFromFilesForKey: @"globals"];
 }
 
+- (NSDictionary*)properties
+{
+    return [self programComponentsFromFilesForKey: @"properties"];
+}
+
+- (NSDictionary*)macros
+{
+    return [self programComponentsFromFilesForKey: @"macros"];
+}
+
 - (SCKIndex*)indexForFileExtension: (NSString*)extension
 {
 	return [indexes objectForKey: extension];

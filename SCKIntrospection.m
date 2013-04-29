@@ -1,4 +1,5 @@
 #import "SCKIntrospection.h"
+#import "SCKClangSourceFile.h"
 #import <EtoileFoundation/EtoileFoundation.h>
 #include <objc/runtime.h>
 
@@ -35,7 +36,7 @@
 @end
 
 @implementation SCKClass
-@synthesize subclasses, superclass, categories, methods, ivars, properties;
+@synthesize subclasses, superclass, categories, methods, ivars, properties, macros;
 - (NSString*)description
 {
 	NSMutableString *str = [self.name mutableCopy];
@@ -57,6 +58,7 @@
 	methods = [NSMutableDictionary new];
 	ivars = [NSMutableArray new];
     properties = [NSMutableArray new];
+    macros = [NSMutableArray new];
 	return self;
 }
 - (id)initWithClass: (Class)cls

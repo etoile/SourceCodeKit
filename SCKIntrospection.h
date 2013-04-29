@@ -62,6 +62,7 @@
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
 @property (nonatomic, readonly, retain) NSMutableArray *ivars;
 @property (nonatomic, readonly, retain) NSMutableArray *properties;
+@property (nonatomic, readonly, retain) NSMutableArray *macros;
 - (id) initWithClass: (Class)cls;
 @end
 

@@ -8,7 +8,7 @@
 	return YES;
 }
 
-- (void)sleepWithDelay: (NSUInteger)seconds
+- (void)sleepLater: (NSUInteger)seconds
 {
 	
 }
@@ -22,10 +22,20 @@
 
 
 @implementation B
+@synthesize text1, text2, text3;
 
 - (void)bip: (id)sender
 {
 	
+}
+
+@end
+
+@implementation C
+
+- (void)hello
+{
+    
 }
 
 @end

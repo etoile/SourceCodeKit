@@ -36,7 +36,7 @@ static void freestring(CXString *str)
 
 @implementation SCKSourceLocation
 
-@synthesize file;
+@synthesize file, offset;
 
 - (id)initWithClangSourceLocation: (CXSourceLocation)l
 {
@@ -596,6 +596,8 @@ static NSString *classNameFromCategory(CXCursor category)
 	classes = [NSMutableDictionary new];
 	functions = [NSMutableDictionary new];
 	globals = [NSMutableDictionary new];
+    properties = [NSMutableDictionary new];
+    macros = [NSMutableDictionary new];
 	enumerations = [NSMutableDictionary new];
 	enumerationValues = [NSMutableDictionary new];
 	return self;

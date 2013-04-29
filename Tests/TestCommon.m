@@ -14,18 +14,11 @@
 
 - (void)parseSourceFilesIntoCollection: (SCKSourceCollection*)aSourceCollection
 {
+	NSParameterAssert(aSourceCollection != nil);
 	for (NSString *path in [self parsingTestFiles])
 	{
 		[aSourceCollection sourceFileForPath: path];
 	}
 }
 						
-- (id)init
-{
-	SUPERINIT;
-	sourceCollection = [SCKSourceCollection new];
-	[self parseSourceFilesIntoCollection: sourceCollection];
-	return self;
-}
-
 @end

@@ -18,6 +18,8 @@
 @property (nonatomic, readonly, retain) NSMutableDictionary *bundles;
 @property (nonatomic, readonly, retain) NSMutableDictionary *functions;
 @property (nonatomic, readonly, retain) NSMutableDictionary *globals;
+@property (nonatomic, readonly, retain) NSMutableDictionary *properties;
+@property (nonatomic, readonly, retain) NSMutableDictionary *macros;
 @property (nonatomic, readonly, retain) NSMutableDictionary *enumerations;
 @property (nonatomic, readonly, retain) NSMutableDictionary *enumerationValues;
 /**
