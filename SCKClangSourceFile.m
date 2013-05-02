@@ -336,32 +336,31 @@ static NSString *classNameFromCategory(CXCursor category)
          attributes: (CXObjCPropertyAttrKind)attributesOfProperty
          isIBOutlet: (BOOL)isOBOutlet
 {
-    SCKProperty *property = [properties objectForKey: nameOfProperty];
-    if (nil == property)
+	SCKProperty *property = [properties objectForKey: nameOfProperty];
+	if (nil == property)
 	{
-        property = [SCKProperty new];
-        [property setName: nameOfProperty];
-        [properties setObject: property forKey: nameOfProperty];
-    }
-    
-    [property setDefinition: sourceLocation];
-    [property setDeclaration: sourceLocation];
+		property = [SCKProperty new];
+		[property setName: nameOfProperty];
+		[properties setObject: property forKey: nameOfProperty];
+	}
+
+	[property setDefinition: sourceLocation];
+	[property setDeclaration: sourceLocation];
 }
 
 - (void)setLocation: (SCKSourceLocation*)sourceLocation
            forMacro: (NSString*)macroName
-         withTokens: (NSArray*)tokens
 {
-    SCKMacro *macro = [macros objectForKey: macroName];
-    if (nil == macro)
+	SCKMacro *macro = [macros objectForKey: macroName];
+	if (nil == macro)
 	{
-        macro = [SCKMacro new];
-        [macro setName: macroName];
-        [macros setObject: macro forKey: macroName];
-    }
+		macro = [SCKMacro new];
+		[macro setName: macroName];
+		[macros setObject: macro forKey: macroName];
+	}
     
-    [macro setDefinition: sourceLocation];
-    [macro setDeclaration: sourceLocation];
+	[macro setDefinition: sourceLocation];
+	[macro setDeclaration: sourceLocation];
 }
 
 - (void)rebuildIndex
@@ -472,8 +471,8 @@ static NSString *classNameFromCategory(CXCursor category)
 					}
 					break;
 				}
-                case CXCursor_ObjCPropertyDecl:
-                {
+				case CXCursor_ObjCPropertyDecl:
+				{
 					SCOPED_STR(name, clang_getCursorSpelling(cursor));
 					SCOPED_STR(type, clang_getCursorKindSpelling(clang_getCursorKind(cursor)));
 					CXObjCPropertyAttrKind attributes = 0;
@@ -488,38 +487,22 @@ static NSString *classNameFromCategory(CXCursor category)
 					         withType: [NSString stringWithUTF8String: type]
 					       attributes: attributes
 					       isIBOutlet: isIBOutlet];
-                    break;
-                }
-                case CXCursor_MacroDefinition:
-                {
+					break;
+				}
+				case CXCursor_MacroDefinition:
+				{
 					SCOPED_STR(macroName, clang_getCursorSpelling(cursor));
-					NSMutableArray *tokenNames = [NSMutableArray array];
-					CXSourceRange sourceRange = clang_getCursorExtent(cursor);
-					CXToken *tokens;
-					unsigned int count = 0;
-
-					clang_tokenize(translationUnit, sourceRange, &tokens, &count);
-
-					for (int i = 0; i < count; i++)
-					{
-						SCOPED_STR(tokenName, clang_getTokenSpelling(translationUnit, tokens[i]));
-						[tokenNames addObject: [NSString stringWithUTF8String: tokenName]];
-						// FIXME: clang_disposeString(tokenSpelling);
-					}
-					// FIXME: clang_disposeTokens(translationUnit, tokens, num);
 
 					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
 						initWithClangSourceLocation:clang_getCursorLocation(cursor)];
 
 					[self setLocation: sourceLocation
-					         forMacro: [NSString stringWithUTF8String: macroName]
-					       withTokens: tokenNames];
+					         forMacro: [NSString stringWithUTF8String: macroName]];
 					break;
-                }
-                case CXCursor_EnumDecl:
+				}
+				case CXCursor_EnumDecl:
 				{
 					SCOPED_STR(enumName, clang_getCursorSpelling(cursor));
-					//SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
 					NSString *name = [NSString stringWithUTF8String: enumName];
 					SCKEnumeration *e = [enumerations objectForKey: name];
 					__block BOOL foundType;
@@ -623,8 +606,6 @@ static NSString *classNameFromCategory(CXCursor category)
 	}
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused"
 - (void)reparse
 {
 	//NSLog(@" ---> Parsing %@", [fileName lastPathComponent]);
@@ -679,7 +660,6 @@ static NSString *classNameFromCategory(CXCursor category)
 	}
 	[self rebuildIndex];
 }
-#pragma clang diagnostic push
 
 - (void)lexicalHighlightFile
 {
