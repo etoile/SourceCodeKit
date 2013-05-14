@@ -35,6 +35,7 @@
 		609CFDF216FFD38D00D01AAB /* SourceCodeKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDE116FFD38D00D01AAB /* SourceCodeKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		609CFE6C16FFD83100D01AAB /* EtoileFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE5116FFD81300D01AAB /* EtoileFoundation.framework */; };
 		609CFE7016FFDE7F00D01AAB /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE6F16FFDE7F00D01AAB /* libclang.dylib */; };
+		60C4F4A3173AA84800AA10F8 /* EtoileFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE5116FFD81300D01AAB /* EtoileFoundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +109,13 @@
 			remoteGlobalIDString = 603647AB0E409244003377E0;
 			remoteInfo = EtoileFoundation;
 		};
+		60C4F5AF1742981100AA10F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 609CFDAB16FFD31700D01AAB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 609CFDB416FFD31700D01AAB;
+			remoteInfo = SourceCodeKit;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -169,6 +177,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				60C4F4A3173AA84800AA10F8 /* EtoileFoundation.framework in Frameworks */,
 				601C529817253F30002E55C6 /* UnitKit.framework in Frameworks */,
 				601C523917253D6D002E55C6 /* SourceCodeKit.framework in Frameworks */,
 				601C523817253D68002E55C6 /* Foundation.framework in Frameworks */,
@@ -346,6 +355,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				60C4F5B01742981100AA10F8 /* PBXTargetDependency */,
 			);
 			name = TestSourceCodeKit;
 			productName = TestSourceCodeKit;
@@ -523,6 +533,11 @@
 			isa = PBXTargetDependency;
 			name = EtoileFoundation;
 			targetProxy = 609CFE6A16FFD82B00D01AAB /* PBXContainerItemProxy */;
+		};
+		60C4F5B01742981100AA10F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 609CFDB416FFD31700D01AAB /* SourceCodeKit */;
+			targetProxy = 60C4F5AF1742981100AA10F8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
