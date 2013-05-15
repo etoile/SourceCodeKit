@@ -592,7 +592,10 @@
 				GCC_WARN_UNDECLARED_SELECTOR = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = macosx;
-				WARNING_CFLAGS = "-Wall";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wno-unused",
+				);
 			};
 			name = Debug;
 		};
@@ -610,7 +613,10 @@
 				GCC_WARN_UNDECLARED_SELECTOR = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = macosx;
-				WARNING_CFLAGS = "-Wall";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wno-unused",
+				);
 			};
 			name = Release;
 		};

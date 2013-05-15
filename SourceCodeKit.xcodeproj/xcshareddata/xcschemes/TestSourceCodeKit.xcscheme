@@ -63,7 +63,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "$TARGET_BUILD_DIR/$WRAPPER_NAME"
+            argument = "$TARGET_BUILD_DIR/TestSourceCodeKit.bundle"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
