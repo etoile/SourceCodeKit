@@ -89,6 +89,7 @@ static SCKSourceCollection *sourceCollection = nil;
     SCKClass *class = [self parsedClassForName: @"B"];
     NSArray *properties = [class properties];
 
+	// FIXME: This test fails on GNUstep but not Mac OS X.
 	UKObjectsEqual(A(@"text1", @"text2", @"text3"), [[properties mappedCollection] name]);
 
 	SCKProperty *text1 = [properties firstObject];
