@@ -40,8 +40,8 @@ static SCKSourceCollection *sourceCollection = nil;
 
 - (void)testMethod
 {
-    SCKClass *classA = [self parsedClassForName: @"A"];
-    NSDictionary *methods = [classA methods];
+	SCKClass *classA = [self parsedClassForName: @"A"];
+	NSDictionary *methods = [classA methods];
 	// FIXME: .cxx_destruct shouldn't be listed among the methods
 	NSSet *methodNames = S(@".cxx_destruct", @"text", @"setText:",
 		@"wakeUpAtDate:", @"sleepLater:", @"sleepNow");
@@ -74,8 +74,8 @@ static SCKSourceCollection *sourceCollection = nil;
 
 - (void)testIVar
 {
-    SCKClass *class = [self parsedClassForName: @"C"];
-    NSArray *ivars = [class ivars];
+	SCKClass *class = [self parsedClassForName: @"C"];
+	NSArray *ivars = [class ivars];
 	
 	UKObjectsEqual(A(@"ivar1", @"ivar2", @"ivar3"), [[ivars mappedCollection] name]);
 	
@@ -86,8 +86,8 @@ static SCKSourceCollection *sourceCollection = nil;
 
 - (void)testProperty
 {
-    SCKClass *class = [self parsedClassForName: @"B"];
-    NSArray *properties = [class properties];
+	SCKClass *class = [self parsedClassForName: @"B"];
+	NSArray *properties = [class properties];
 
 	// FIXME: This test fails on GNUstep but not Mac OS X.
 	UKObjectsEqual(A(@"text1", @"text2", @"text3"), [[properties mappedCollection] name]);

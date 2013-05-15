@@ -32,9 +32,9 @@
 
 @interface C
 {
-    NSString *ivar1;
-    NSString *ivar2;
-    NSString *ivar3;
+	NSString *ivar1;
+	NSString *ivar2;
+	NSString *ivar3;
 }
 
 - (void)hello;

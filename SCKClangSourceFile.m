@@ -579,8 +579,8 @@ static NSString *classNameFromCategory(CXCursor category)
 	classes = [NSMutableDictionary new];
 	functions = [NSMutableDictionary new];
 	globals = [NSMutableDictionary new];
-    properties = [NSMutableDictionary new];
-    macros = [NSMutableDictionary new];
+	properties = [NSMutableDictionary new];
+	macros = [NSMutableDictionary new];
 	enumerations = [NSMutableDictionary new];
 	enumerationValues = [NSMutableDictionary new];
 	return self;

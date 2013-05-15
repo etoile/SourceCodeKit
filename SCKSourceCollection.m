@@ -99,12 +99,12 @@ static NSDictionary *fileClasses;
 
 - (NSDictionary*)properties
 {
-    return [self programComponentsFromFilesForKey: @"properties"];
+	return [self programComponentsFromFilesForKey: @"properties"];
 }
 
 - (NSDictionary*)macros
 {
-    return [self programComponentsFromFilesForKey: @"macros"];
+	return [self programComponentsFromFilesForKey: @"macros"];
 }
 
 - (SCKIndex*)indexForFileExtension: (NSString*)extension
