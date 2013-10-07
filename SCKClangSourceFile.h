@@ -25,6 +25,6 @@
 @property (nonatomic, readonly) NSMutableDictionary *globals;
 @property (nonatomic, readonly) NSMutableDictionary *enumerations;
 @property (nonatomic, readonly) NSMutableDictionary *enumerationValues;
+@property (nonatomic, readonly) NSMutableDictionary *properties;
 @property (nonatomic, readonly) NSMutableDictionary *macros;
-@property (nonatomic, readonly) NSMutableDictionary *protocols;
 @end
