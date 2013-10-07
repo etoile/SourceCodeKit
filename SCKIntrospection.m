@@ -36,7 +36,7 @@
 @end
 
 @implementation SCKClass
-@synthesize subclasses, superclass, categories, methods, ivars, properties, macros;
+@synthesize subclasses, superclass, categories, methods, ivars, properties;
 - (NSString*)description
 {
 	NSMutableString *str = [self.name mutableCopy];
@@ -48,6 +48,11 @@
 	{
 		[str appendFormat: @"\n\t\t%@", method];
 	}
+	for (id property in properties)
+	{
+		[str appendFormat: @"\n\t\t%@", property];
+	}
+
 	return str;
 }
 - (id)init
@@ -56,9 +61,8 @@
 	subclasses = [NSMutableArray new];
 	categories = [NSMutableDictionary new];
 	methods = [NSMutableDictionary new];
-	ivars = [NSMutableArray new];
-	properties = [NSMutableArray new];
-	macros = [NSMutableArray new];
+	ivars = [NSMutableDictionary new];
+	properties = [NSMutableDictionary new];
 	return self;
 }
 - (id)initWithClass: (Class)cls
@@ -70,25 +74,44 @@
 	Ivar *ivarList = class_copyIvarList(cls, &count);
 	for (unsigned int i=0 ; i<count ; i++)
 	{
-		STACK_SCOPED SCKIvar *ivar = [SCKIvar new];
-		ivar.name = [NSString stringWithUTF8String: ivar_getName(ivarList[i])];
-		[ivar setTypeEncoding: [NSString stringWithUTF8String: ivar_getTypeEncoding(ivarList[i])]];
-		ivar.parent = self;
-		[ivars addObject: ivar];
+		NSString *name = [NSString stringWithUTF8String: ivar_getName(ivarList[i])];
+		SCKIvar *ivar = [ivars objectForKey: name];
+		if (nil == ivar)
+		{
+			ivar = [SCKIvar new];
+			[ivar setName: name];
+			[ivar setTypeEncoding: [NSString stringWithUTF8String: ivar_getTypeEncoding(ivarList[i])]];
+			[ivar setOffset: ivar_getOffset(ivarList[i])];
+			[ivar setParent: self];
+			
+			[ivars setObject: ivar forKey: name];
+		}
 	}
 	if (count>0)
 	{
 		free(ivarList);
 	}
 
+	// FIXME: Doesn't return class methods.
 	Method *methodList = class_copyMethodList(cls, &count);
 	for (unsigned int i=0 ; i<count ; i++)
 	{
-		STACK_SCOPED SCKMethod *method = [SCKMethod new];
-		method.name = [NSString stringWithUTF8String: sel_getName(method_getName(methodList[i]))];
-		[method setTypeEncoding: [NSString stringWithUTF8String: method_getTypeEncoding(methodList[i])]];
-		method.parent = self;
-		[methods setObject: method forKey: method.name];
+		NSString *name = [NSString stringWithUTF8String: sel_getName(method_getName(methodList[i]))];
+		SCKMethod *method = [methods objectForKey: name];
+		if (nil == method)
+		{
+			method = [SCKMethod new];
+			[method setName: name];
+			[method setTypeEncoding: [NSString stringWithUTF8String:
+									  method_getTypeEncoding(methodList[i])]];
+			[method setReturnType: [NSString stringWithUTF8String: method_copyReturnType(methodList[i])]];
+			
+			[[method arguments] setValue: [NSString stringWithUTF8String: method_copyArgumentType(methodList[i], 0)] forKey: [method name]];
+			
+			[method setParent: self];
+			
+			[methods setObject: method forKey: name];
+		}
 	}
 	if (count>0)
 	{
@@ -98,10 +121,18 @@
 	objc_property_t *propertyList = class_copyPropertyList(cls, &count);
 	for (unsigned int i=0 ; i<count; i++)
     {
-        STACK_SCOPED SCKProperty *property = [SCKProperty new];
-        [property setName: [NSString stringWithUTF8String: property_getName(propertyList[i])]];
-        [property setParent: self];
-        [properties addObject: property];
+		NSString *name = [NSString stringWithUTF8String: property_getName(propertyList[i])];
+		SCKProperty *property = [properties objectForKey: name];
+		if (nil == property)
+		{
+			property = [SCKProperty new];
+			[property setName: name];
+			[property setAttributes: [NSString stringWithUTF8String:
+									  property_getAttributes(propertyList[i])]];
+			[property setParent: self];
+			
+			[properties setObject: property forKey: name];
+		}
     }
 	if (count>0)
     {
@@ -114,7 +145,7 @@
 @end
 
 @implementation SCKCategory : SCKProgramComponent
-@synthesize methods;
+@synthesize methods, properties;
 - (id)init
 {
 	SUPERINIT;
@@ -133,7 +164,7 @@
 @end
 
 @implementation SCKMethod
-@synthesize isClassMethod;
+@synthesize isClassMethod, returnType;
 - (NSString*)description
 {
 	return [NSString stringWithFormat: @"%c%@", isClassMethod ? '+' : '-', self.name];
@@ -144,10 +175,14 @@
 @synthesize typeEncoding;
 @end
 
-@implementation SCKIvar @end
+@implementation SCKIvar
+@synthesize offset;
+@end
 @implementation SCKFunction @end
 @implementation SCKGlobal @end
-@implementation SCKProperty @end
+@implementation SCKProperty
+@synthesize attributes;
+@end
 @implementation SCKMacro @end
 @implementation SCKEnumeration
 @synthesize values;
@@ -158,4 +193,8 @@
 {
 	return [NSString stringWithFormat: @"%@ (%lld)", self.name, longLongValue];
 }
+@end
+
+@implementation SCKProtocol
+@synthesize requiredMethods, optionalMethods, requiredProperties, optionalProperties;
 @end

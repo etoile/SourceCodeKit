@@ -14,11 +14,14 @@
 
 - (void)parseSourceFilesIntoCollection: (SCKSourceCollection*)aSourceCollection
 {
-	NSParameterAssert(aSourceCollection != nil);
+	clangParsingForInterface = (SCKClangSourceFile *)[aSourceCollection sourceFileForPath: [[self parsingTestFiles] firstObject]];
+	clangParsingForImplementation = (SCKClangSourceFile *)[aSourceCollection sourceFileForPath: [[self parsingTestFiles] objectAtIndex: 1]];
+
+	/*NSParameterAssert(aSourceCollection != nil);
 	for (NSString *path in [self parsingTestFiles])
 	{
 		[aSourceCollection sourceFileForPath: path];
-	}
+	}*/
 }
 						
 @end

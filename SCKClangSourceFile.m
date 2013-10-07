@@ -204,7 +204,7 @@ NSArray *GNUstepIncludeDirectories()
 
 @implementation SCKClangSourceFile
 
-@synthesize classes, functions, globals, enumerations, enumerationValues, properties, macros;
+@synthesize classes, functions, globals, enumerations, enumerationValues, macros, protocols;
 
 /*
 static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
@@ -253,17 +253,19 @@ static NSString *classNameFromCategory(CXCursor category)
 - (void)didParseClassNamed: (NSString*)aClassName
             superclassName: (NSString*)aSuperclassName
                 atLocation: (SCKSourceLocation*)aLocation
-{
+{	
 	SCKClass *class = [self classForName: aClassName];
 	[class setSuperclass: [self classForName: aSuperclassName]];
 }
 
 - (void)setLocation: (SCKSourceLocation*)aLocation
           forMethod: (NSString*)methodName
+		   withType: (NSString*)typeEncoding
             inClass: (NSString*)className
            category: (NSString*)categoryName
+	  isClassMethod: (BOOL)isClassMethod
        isDefinition: (BOOL)isDefinition
-{
+{	
 	SCKClass *cls = [classes objectForKey: className];
 	if (nil == cls)
 	{
@@ -285,6 +287,17 @@ static NSString *classNameFromCategory(CXCursor category)
 		methods = cat.methods;
 	}
 	SCKMethod *m = [methods objectForKey: methodName];
+	if (nil == m)
+	{
+		m = [SCKMethod new];
+		[m setName: methodName];
+		[m setIsClassMethod: isClassMethod];
+		[m setTypeEncoding: typeEncoding];
+		[m setParent: cls];
+		
+		[[cls methods] addObject: m forKey: methodName];
+	}
+	
 	if (isDefinition)
 	{
 		m.definition = aLocation;
@@ -326,27 +339,69 @@ static NSString *classNameFromCategory(CXCursor category)
 	[dict setObject: global forKey: symbol];
 }
 
-#if CINDEX_VERSION < 18
+#if CINDEX_VERSION < 21
 #define CXObjCPropertyAttrKind int
 #endif
 
 - (void)setLocation: (SCKSourceLocation*)sourceLocation
-        forProperty: (NSString*)nameOfProperty
+        forProperty: (NSString*)propertyName
+		 inProtocol: (NSString *)protocolName
            withType: (NSString*)typeOfProperty
          attributes: (CXObjCPropertyAttrKind)attributesOfProperty
-         isIBOutlet: (BOOL)isOBOutlet
+         isIBOutlet: (BOOL)isIBOutlet
 {
-	SCKProperty *property = [properties objectForKey: nameOfProperty];
+	SCKProtocol *protocol = [protocols objectForKey: protocolName];
+	if (nil == protocol)
+	{
+		protocol = [SCKProtocol new];
+		[protocol setName: protocolName];
+		[protocols addObject: protocol forKey: protocolName];
+	}
+		
+	SCKProperty *property = [[protocol requiredProperties] objectForKey: propertyName];
 	if (nil == property)
 	{
 		property = [SCKProperty new];
-		[property setName: nameOfProperty];
-		[properties setObject: property forKey: nameOfProperty];
+		[property setName: propertyName];
+		[property setParent: protocol];
+		
+		[[protocol requiredProperties] addObject: property forKey: propertyName];
 	}
 
 	[property setDefinition: sourceLocation];
 	[property setDeclaration: sourceLocation];
 }
+
+- (void)setLocation: (SCKSourceLocation*)sourceLocation
+        forProperty: (NSString*)propertyName
+		   withType: (NSString *)typeEncoding
+			inClass: (NSString *)className
+         attributes: (CXObjCPropertyAttrKind)attributesOfProperty
+         isIBOutlet: (BOOL)isIBOutlet
+{
+	SCKClass *class = [classes objectForKey: className];
+	if (nil == class)
+	{
+		class = [SCKClass new];
+		[class setName: className];
+		[classes addObject: class forKey: className];
+	}
+	
+	SCKProperty *property = [[class properties] objectForKey: propertyName];
+	if (nil == property)
+	{
+		property = [SCKProperty new];
+		[property setName: propertyName];
+		[property setTypeEncoding: typeEncoding];
+		[property setParent: class];
+		
+		[[class properties] addObject: property forKey: propertyName];
+	}
+
+	[property setDefinition: sourceLocation];
+	[property setDeclaration: sourceLocation];
+}
+
 
 - (void)setLocation: (SCKSourceLocation*)sourceLocation
            forMacro: (NSString*)macroName
@@ -356,11 +411,104 @@ static NSString *classNameFromCategory(CXCursor category)
 	{
 		macro = [SCKMacro new];
 		[macro setName: macroName];
-		[macros setObject: macro forKey: macroName];
+		[macros addObject: macro forKey: macroName];
 	}
     
 	[macro setDefinition: sourceLocation];
 	[macro setDeclaration: sourceLocation];
+}
+
+- (void)setLocation: (SCKSourceLocation *)sourceLocation
+		forProtocol: (NSString *)protocolName
+	   isDifinition: (BOOL)isDefinition
+{
+	SCKProtocol *protocol = [protocols objectForKey: protocolName];
+	if (nil == protocol)
+	{
+		protocol = [SCKProtocol new];
+		[protocol setName: protocolName];
+		
+		[protocols addObject: protocol forKey: protocolName];
+	}
+	
+	if (isDefinition)
+	{
+		[protocol setDefinition: sourceLocation];
+	}
+	else
+	{
+		[protocol setDeclaration: sourceLocation];
+	}
+}
+
+- (void)setLocation: (SCKSourceLocation *)sourceLocation
+		  forMethod: (NSString *)methodName
+		 inProtocol: (NSString *)protocolName
+	  isClassMethod: (BOOL)isClassMethod
+	   isDefinition: (BOOL)isDefinition
+{
+	SCKProtocol *protocol = [protocols objectForKey: protocolName];
+	if (nil == protocol)
+	{
+		protocol = [SCKProtocol new];
+		[protocol setName: protocolName];
+		[protocols addObject: protocol forKey: protocolName];
+	}
+	
+	SCKMethod *method = [[protocol requiredMethods] objectForKey: methodName];
+	if (nil == method)
+	{
+		method = [SCKMethod new];
+		[method setName: methodName];
+		[method setIsClassMethod: isClassMethod];
+		[method setParent: protocol];
+		
+		[[protocol requiredMethods] addObject: method forKey: methodName];
+	}
+	
+	if (isDefinition)
+	{
+		[method setDefinition: sourceLocation];
+	}
+	else
+	{
+		[method setDeclaration: sourceLocation];
+	}
+}
+
+- (void)setLocation: (SCKSourceLocation *)sourceLocation
+			forIvar: (NSString *)ivarName
+			inClass: (NSString *)className
+   withTypeEncoding: (NSString *)type
+{
+	SCKClass *class = [classes objectForKey: className];
+	if (nil == class)
+	{
+		class = [SCKClass new];
+		[class setName: className];
+		[classes addObject: class forKey: className];
+	}
+	
+	SCKIvar *ivar = [[class ivars] objectForKey: ivarName];
+	if (nil == ivar)
+	{
+		ivar = [SCKIvar new];
+		[ivar setName: ivarName];
+		[ivar setTypeEncoding: type];
+		[ivar setParent: class];
+		
+		[[class ivars] addObject: ivar forKey: ivarName];
+	}
+
+	[ivar setDeclaration: sourceLocation];
+}
+
+- (void)setLocation: (SCKSourceLocation *)sourceLocation
+		   forClass: (NSString *)className
+	 withSuperClass: (NSString *)superClassName
+{
+	SCKClass *class = [self classForName: className];
+	[class setSuperclass: [self classForName: superClassName]];
 }
 
 - (void)rebuildIndex
@@ -379,7 +527,7 @@ static NSString *classNameFromCategory(CXCursor category)
 					NSLog(@"Unhandled cursor type: %s (%s)", kind, name);
 #endif
 					break;
-				}
+				}					
 				case CXCursor_ObjCInterfaceDecl:
 				{
 					SCKSourceLocation *classLoc = [[SCKSourceLocation alloc]
@@ -389,25 +537,84 @@ static NSString *classNameFromCategory(CXCursor category)
 					clang_visitChildrenWithBlock(cursor,
 						^ enum CXChildVisitResult (CXCursor classCursor, CXCursor parent)
 						{
-							if (CXCursor_ObjCInstanceMethodDecl == classCursor.kind)
+							switch (classCursor.kind)
 							{
-								SCOPED_STR(methodName, clang_getCursorSpelling(classCursor));
-								SCKSourceLocation *methodLoc = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+								case CXCursor_ObjCClassRef:
+								{									
+									SCOPED_STR(superClassName, clang_getCursorSpelling(classCursor));
+									[self didParseClassNamed: [NSString stringWithUTF8String: className]
+											  superclassName: [NSString stringWithUTF8String: superClassName]
+												  atLocation: classLoc];
+									
+									break;
+								}
+								case CXCursor_ObjCSuperClassRef:
+								{									
+									NSString *superClassName = [NSString stringWithUTF8String: clang_getCString(clang_getCursorSpelling(classCursor))];
+									SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+									
+									[self setLocation: sourceLocation
+											 forClass: [NSString stringWithUTF8String: className]
+									   withSuperClass: superClassName];
+									
+									break;
+								}
+								case CXCursor_ObjCInstanceMethodDecl:
+								case CXCursor_ObjCClassMethodDecl:
+								{									
+									NSString *name = [NSString stringWithUTF8String: clang_getCString(clang_getCursorSpelling(classCursor))];
+									NSString *type = [NSString stringWithUTF8String: clang_getCString(clang_getDeclObjCTypeEncoding(classCursor))];
+									BOOL isClassMethod = (CXCursor_ObjCClassMethodDecl == classCursor.kind);
+									SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+									
+									// FIXME: Retrieve method return type
+									// FIXME: Retrieve method argument[s]
 
-								[self setLocation: methodLoc
-								        forMethod: [NSString stringWithUTF8String: methodName]
-								          inClass: [NSString stringWithUTF8String: className]
-								         category: nil
-								     isDefinition: clang_isCursorDefinition(classCursor)];
-							}
-							else if (CXCursor_ObjCSuperClassRef == classCursor.kind)
-							{
-								SCOPED_STR(superclassName, clang_getCursorSpelling(classCursor));
+									[self setLocation: sourceLocation
+											forMethod: name
+											 withType: type
+											  inClass: [NSString stringWithUTF8String: className]
+											 category: nil
+										isClassMethod: isClassMethod
+										 isDefinition: clang_isCursorDefinition(classCursor)];
+									
+									break;
+								}
+								case CXCursor_ObjCIvarDecl:
+								{									
+									NSString *name = [NSString stringWithUTF8String: clang_getCString(clang_getCursorSpelling(classCursor))];
+									NSString *type = [NSString stringWithUTF8String: clang_getCString(clang_getDeclObjCTypeEncoding(classCursor))];
+									SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+									
+									[self setLocation: sourceLocation
+											  forIvar: name
+											  inClass: [NSString stringWithUTF8String: className]
+									 withTypeEncoding: type];
+									
+									break;
+								}
+								case CXCursor_ObjCPropertyDecl:
+								{
+									SCOPED_STR(name, clang_getCursorSpelling(classCursor));
+									SCOPED_STR(type, clang_getDeclObjCTypeEncoding(classCursor));
+									CXObjCPropertyAttrKind attributes = 0;
+#if CINDEX_VERSION >= 21
+									attributes = clang_Cursor_getObjCPropertyAttributes(cursor, 0);
+#endif
+									BOOL isIBOutlet = (CXCursor_IBOutletAttr == classCursor.kind);
+									SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+									
+									[self setLocation: sourceLocation
+										  forProperty: [NSString stringWithUTF8String: name]
+											 withType: [NSString stringWithUTF8String: type]
+											  inClass: [NSString stringWithUTF8String: className]
+										   attributes: attributes
+										   isIBOutlet: isIBOutlet];
+									break;
+								}
 
-								[self didParseClassNamed: [NSString stringWithUTF8String: className]
-								          superclassName: [NSString stringWithUTF8String: superclassName]
-								              atLocation: classLoc];
+								default:
+									break;
 							}
 							return CXChildVisit_Continue;
 						});
@@ -417,18 +624,34 @@ static NSString *classNameFromCategory(CXCursor category)
 				{
 					clang_visitChildrenWithBlock(clang_getTranslationUnitCursor(translationUnit),
 						^ enum CXChildVisitResult (CXCursor classCursor, CXCursor parent)
-						{
-							if (CXCursor_ObjCInstanceMethodDecl == classCursor.kind)
+						{							
+							SCOPED_STR(className, clang_getCursorSpelling(parent));
+							
+							switch (classCursor.kind)
 							{
-								SCOPED_STR(methodName, clang_getCursorSpelling(cursor));
-								SCOPED_STR(className, clang_getCursorSpelling(parent));
-								SCKSourceLocation *l = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
-								[self setLocation: l
-								        forMethod: [NSString stringWithUTF8String: methodName]
-								          inClass: [NSString stringWithUTF8String: className]
-								         category: nil
-								     isDefinition: clang_isCursorDefinition(classCursor)];
+								case CXCursor_ObjCInstanceMethodDecl:
+								case CXCursor_ObjCClassMethodDecl:
+								{
+									NSString *name = [NSString stringWithUTF8String: clang_getCString(clang_getCursorSpelling(classCursor))];
+									NSString *type = [NSString stringWithUTF8String: clang_getCString(clang_getDeclObjCTypeEncoding(classCursor))];
+									BOOL isClassMethod = (CXCursor_ObjCClassMethodDecl == classCursor.kind);
+									SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+									
+									// FIXME: Retrieve method return type
+									// FIXME: Retrieve method argument[s]
+									[self setLocation: sourceLocation
+											forMethod: name
+											 withType: type
+											  inClass: [NSString stringWithUTF8String: className]
+											 category: nil
+										isClassMethod: isClassMethod
+										 isDefinition: YES];
+									
+									break;
+								}	
+									
+								default:
+									break;
 							}
 							return CXChildVisit_Continue;
 						});
@@ -438,18 +661,35 @@ static NSString *classNameFromCategory(CXCursor category)
 				{
 					clang_visitChildrenWithBlock(cursor,
 						^ enum CXChildVisitResult (CXCursor categoryCursor, CXCursor parent)
-					{
-						if (CXCursor_ObjCInstanceMethodDecl == categoryCursor.kind)
+					{						
+						switch (categoryCursor.kind)
 						{
-							SCOPED_STR(methodName, clang_getCursorSpelling(categoryCursor));
-							SCOPED_STR(categoryName, clang_getCursorSpelling(parent));
-							NSString *className = classNameFromCategory(parent);
-							SCKSourceLocation *l = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(categoryCursor)];
-							[self setLocation: l
-							        forMethod: [NSString stringWithUTF8String: methodName]
-							          inClass: className
-							         category: [NSString stringWithUTF8String: categoryName]
-							     isDefinition: clang_isCursorDefinition(cursor)];
+							case CXCursor_ObjCInstanceMethodDecl:
+							case CXCursor_ObjCClassMethodDecl:
+							{
+								NSString *methodName = [NSString stringWithUTF8String: clang_getCString(clang_getCursorSpelling(categoryCursor))];
+								NSString *methodType = [NSString stringWithUTF8String: clang_getCString(clang_getDeclObjCTypeEncoding(categoryCursor))];
+								NSString *categoryName = [NSString stringWithUTF8String: clang_getCString(clang_getCursorSpelling(parent))];
+								NSString *className = classNameFromCategory(parent);
+								BOOL isClassMethod = (CXCursor_ObjCClassMethodDecl == categoryCursor.kind);
+								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(categoryCursor)];
+								
+								// FIXME: Retrieve method return type
+								// FIXME: Retrieve method argument[s]
+								
+								[self setLocation: sourceLocation
+										forMethod: methodName
+										 withType: methodType
+										  inClass: className
+										 category: categoryName
+									isClassMethod: isClassMethod
+									 isDefinition: clang_isCursorDefinition(categoryCursor)];
+								
+								break;
+							}
+								
+							default:
+								break;
 						}
 						return CXChildVisit_Continue;
 					});
@@ -471,26 +711,94 @@ static NSString *classNameFromCategory(CXCursor category)
 					}
 					break;
 				}
-				case CXCursor_ObjCPropertyDecl:
+				case CXCursor_ObjCProtocolDecl:
 				{
-					SCOPED_STR(name, clang_getCursorSpelling(cursor));
-					SCOPED_STR(type, clang_getCursorKindSpelling(clang_getCursorKind(cursor)));
-					CXObjCPropertyAttrKind attributes = 0;
-#if CINDEX_VERSION >= 18
-					attributes = clang_Cursor_getObjCPropertyAttributes(cursor, 0);
-#endif
-					BOOL isIBOutlet = (CXCursor_IBOutletAttr == cursor.kind);
+					NSString *protocolName = [NSString stringWithUTF8String:
+						clang_getCString(clang_getCursorSpelling(cursor))];
 					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
-
-					[self setLocation: sourceLocation
-					      forProperty: [NSString stringWithUTF8String: name]
-					         withType: [NSString stringWithUTF8String: type]
-					       attributes: attributes
-					       isIBOutlet: isIBOutlet];
+					SCKProtocol *protocol = [protocols objectForKey: protocolName];
+					
+					if (clang_isCursorDefinition(clang_getCursorDefinition(cursor)))
+					{
+						if (nil == protocol)
+						{
+							[self setLocation: sourceLocation
+								  forProtocol: protocolName
+								 isDifinition: YES];
+						}
+						clang_visitChildrenWithBlock(cursor,
+						^enum CXChildVisitResult(CXCursor protocolCursor, CXCursor parent)
+						{
+							NSString *name = [NSString stringWithUTF8String: clang_getCString(clang_getCursorSpelling(protocolCursor))];
+							NSString *type = [NSString stringWithUTF8String: clang_getCString(clang_getDeclObjCTypeEncoding(protocolCursor))];
+							SCKMethod *method = nil;
+							SCKProperty *property = nil;
+							
+							// FIXME: It needs fixing when there's a proper API.
+							switch (protocolCursor.kind)
+							{
+								case CXCursor_ObjCInstanceMethodDecl:
+								case CXCursor_ObjCClassMethodDecl:
+								{
+									method = [SCKMethod new];
+									[method setName: name];
+									[method setTypeEncoding: type];
+									BOOL isClassMethod = (CXCursor_ObjCClassMethodDecl == protocolCursor.kind);
+									[method setIsClassMethod: isClassMethod];
+									
+									[self setLocation: sourceLocation
+											forMethod: [method name]
+										   inProtocol: protocolName
+										isClassMethod: isClassMethod
+										 isDefinition: clang_isCursorDefinition(protocolCursor)];
+									
+									[[protocol requiredMethods] setObject: method forKey:name];
+									
+									break;
+								}
+								case CXCursor_ObjCPropertyDecl:
+								{
+									SCOPED_STR(name, clang_getCursorSpelling(protocolCursor));
+									SCOPED_STR(type, clang_getDeclObjCTypeEncoding(protocolCursor));
+									CXObjCPropertyAttrKind attributes = 0;
+#if CINDEX_VERSION >= 21
+									attributes = clang_Cursor_getObjCPropertyAttributes(cursor, 0);
+#endif
+									BOOL isIBOutlet = (CXCursor_IBOutletAttr == protocolCursor.kind);
+									SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(protocolCursor)];
+									
+									[self setLocation: sourceLocation
+										  forProperty: [NSString stringWithUTF8String: name]
+										   inProtocol: protocolName
+											 withType: [NSString stringWithUTF8String: type]
+										   attributes: attributes
+										   isIBOutlet: isIBOutlet];
+									break;
+								}
+								default:
+									//ETAssertUnreachable();
+									break;
+							}
+							
+							return CXChildVisit_Recurse;
+						});
+					}
+					else
+					{
+						if (nil == protocol)
+						{
+							[self setLocation: sourceLocation
+								  forProtocol: protocolName
+								 isDifinition: NO];
+						}
+					}
+					
 					break;
 				}
 				case CXCursor_MacroDefinition:
 				{
+					// FIXME: Retrieve documentation
+					
 					SCOPED_STR(macroName, clang_getCursorSpelling(cursor));
 
 					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
@@ -579,10 +887,10 @@ static NSString *classNameFromCategory(CXCursor category)
 	classes = [NSMutableDictionary new];
 	functions = [NSMutableDictionary new];
 	globals = [NSMutableDictionary new];
-	properties = [NSMutableDictionary new];
 	macros = [NSMutableDictionary new];
 	enumerations = [NSMutableDictionary new];
 	enumerationValues = [NSMutableDictionary new];
+	protocols = [NSMutableDictionary new];
 	return self;
 }
 - (void)addIncludePath: (NSString*)includePath

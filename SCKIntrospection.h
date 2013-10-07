@@ -60,34 +60,35 @@
 @property (nonatomic, readonly, retain) NSMutableArray *subclasses;
 @property (nonatomic, readonly, retain) NSMutableDictionary *categories;
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
-@property (nonatomic, readonly, retain) NSMutableArray *ivars;
-@property (nonatomic, readonly, retain) NSMutableArray *properties;
-@property (nonatomic, readonly, retain) NSMutableArray *macros;
+@property (nonatomic, readonly, retain) NSMutableDictionary *ivars;
+@property (nonatomic, readonly, retain) NSMutableDictionary *properties;
 - (id) initWithClass: (Class)cls;
 @end
 
 @interface SCKCategory : SCKProgramComponent
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
+@property (nonatomic, readonly, retain) NSMutableDictionary *properties;
 @end
 
 @interface SCKMethod : SCKTypedProgramComponent
 @property (nonatomic) BOOL isClassMethod;
+@property (nonatomic) NSString *returnType;
+@property (nonatomic) NSMutableDictionary *arguments;
 @end
 
 @interface SCKIvar : SCKTypedProgramComponent
+@property (nonatomic) long offset;
 @end
 
-@interface SCKFunction : SCKTypedProgramComponent
-@end
+@interface SCKFunction : SCKTypedProgramComponent @end
 
-@interface SCKGlobal : SCKTypedProgramComponent
-@end
+@interface SCKGlobal : SCKTypedProgramComponent @end
 
 @interface SCKProperty : SCKTypedProgramComponent
+@property (nonatomic) NSString *attributes;
 @end
 
-@interface SCKMacro : SCKTypedProgramComponent
-@end
+@interface SCKMacro : SCKTypedProgramComponent @end
 
 /**
  * Enumerated type value.  This encapsulates the name and value of the
@@ -110,4 +111,11 @@
  * enumeration.
  */
 @property (nonatomic, retain) NSMutableDictionary *values;
+@end
+
+@interface SCKProtocol : SCKProgramComponent
+@property (nonatomic) NSMutableDictionary *requiredMethods;
+@property (nonatomic) NSMutableDictionary *optionalMethods;
+@property (nonatomic) NSMutableDictionary *requiredProperties;
+@property (nonatomic) NSMutableDictionary *optionalProperties;
 @end
