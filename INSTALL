@@ -60,7 +60,7 @@ To check out the Clang repository, launch the Terminal, in the shell just do:
 
 	svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
 	cd <path to SourceCodeKit>
-	ln -s clang-c <path to Clang repository>/include/clang-c .
+	ln -s <path to Clang repository>/include/clang-c .
 	
 This should create a local symbolic link pointing to the Clang headers. That's 
 all you need to build the SourceCodeKit target.
