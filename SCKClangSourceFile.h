@@ -19,12 +19,15 @@
 	/** libclang translation unit handle. */
 	CXTranslationUnit translationUnit;
 	CXFile file;
+	NSMutableDictionary *functions;
+	NSMutableDictionary *enumerations;
+	NSMutableDictionary *enumerationValues;
+	NSMutableDictionary *macros;
 }
-@property (nonatomic, readonly) NSMutableDictionary *classes;
-@property (nonatomic, readonly) NSMutableDictionary *functions;
-@property (nonatomic, readonly) NSMutableDictionary *globals;
-@property (nonatomic, readonly) NSMutableDictionary *enumerations;
-@property (nonatomic, readonly) NSMutableDictionary *enumerationValues;
-@property (nonatomic, readonly) NSMutableDictionary *properties;
-@property (nonatomic, readonly) NSMutableDictionary *macros;
+
+@property (nonatomic, readonly) NSDictionary *functions;
+@property (nonatomic, readonly) NSDictionary *enumerations;
+@property (nonatomic, readonly) NSDictionary *enumerationValues;
+@property (nonatomic, readonly) NSDictionary *macros;
+
 @end

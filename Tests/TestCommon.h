@@ -11,6 +11,7 @@
 
 }
 
+- (NSArray*)parsingTestFiles;
 - (void)parseSourceFilesIntoCollection: (SCKSourceCollection*)aSourceCollection;
 
 @end

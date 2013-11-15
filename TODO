@@ -1,0 +1,59 @@
+SourceCodeKit TODO
+==================
+
+- Additional libclang parsing tests
+
+	- Protocol method parsing e.g. -testMethodInProtocol
+	- Protocol property parsing
+	- Category method parsing e.g. -testMethodInCategory
+	- Category property parsing
+
+- Static variable parsing
+
+- Macro parsing
+
+- Adopted protocol parsing (for classes, categories and protocols)
+
+- Fix optional and required qualifier parsing once libclang supports them
+
+- Documentation extraction
+
+- Capture the method parsing order (for DocGenerator needs)
+
+	- for ivars and properties, the problem doesn't exist since we put them in arrays and they don't have a definition
+
+	- the method ordering must be captured twice, once for the declaration side and once for the definition side
+
+	- we could switch SCKClass/Protocol/Category to a method array rather than a method dictionary, or add a orderedMethodNames property to SCKClass/Protocol/Category. 
+
+	- for SCKProtocol, turning the method dictionary into an array would imply to:
+
+		- turn -optionalProperties and -requiredProperties into -optionalPropertyNames and -requiredPropertyNames
+		- or add a property such as isOptional to SCKProperty
+
+- Property parsing for categories
+
+- Finish property attribute parsing
+
+- IBOulet parsing for ivars
+
+- Add Runtime parsing tests e.g. TestRuntimeParsing.m similar to TestClangParsing.m
+
+
+Open Questions
+--------------
+
+- SCKSourceCollection.files should be a NSCache or something else
+
+	David: It might be better to have them as a strong to weak map though...
+
+	Quentin: I removed the NSCache TODO, because I added an explicit 'files' property to SCKSourceCollection. This lets you know which files have been parsed for all the global program components currently collected in SCKSourceCollection. This seemed like a useful addition (and the test suite uses it). From an API design viewpoint, it also seems weird that global program components are not lost, if the file they belong to is discarded from the cache, while program components owned by a SCKClangSourceFile just get lost in such a case.
+
+	I can remove the 'files' property from the public API, and track the parsed files manually e.g. in the test suite.
+
+	David: It depends on whether you're using it as a cross-referencing tool or a syntax highlighting tool, or something else.  For LK and for syntax highlighting, you only ever care about the current file, but if there's some spare memory then you may want to hang onto the results so that you can switch back more quickly.
+
+	There may be some use cases where you want to search for a static variable that's declared somewhere, but I don't see that this is very important because if you are looking for a static then you must know what compilation unit it's in...
+
+	My main concern is that we're hanging on to a lot of libclang parser state, which is a lot of memory (10-20MB/file) that we don't need.  Having some protocol for discarding the parser state but retaining the indexing state might also be an option.
+	

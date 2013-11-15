@@ -11,30 +11,63 @@ static NSDictionary *fileClasses;
 @interface SCKClangIndex : NSObject @end
 
 @implementation SCKSourceCollection
-@synthesize bundles;
+{
+	NSMutableDictionary *indexes;
+	/** Files that have already been created. */
+	NSMutableDictionary *files; //TODO: turn back into NSCache
+	NSMutableDictionary *bundles;
+	NSMutableDictionary *bundleClasses;
+	NSMutableDictionary *classes;
+	NSMutableDictionary *protocols;
+	NSMutableDictionary *functions;
+	NSMutableDictionary *globals;
+}
+
+@synthesize files, bundles, classes, protocols, globals, functions;
+
 + (void)initialize
 {
 	Class clang = NSClassFromString(@"SCKClangSourceFile");
-	fileClasses = D(clang, @"m",
+	fileClasses = [D(clang, @"m",
 	                clang, @"cc",
 	                clang, @"c",
 	                clang, @"h",
-	                clang, @"cpp");
+	                clang, @"cpp") copy];
 }
-- (id)init
+
+- (NSMutableDictionary *)newIndexes
 {
-	SUPERINIT
-	indexes = [NSMutableDictionary new];
+	NSMutableDictionary *newIndexes = [NSMutableDictionary new];
+	
 	// A single clang index instance for all of the clang-supported file types
 	id index = [SCKClangIndex new];
-	[indexes setObject: index forKey: @"m"];
-	[indexes setObject: index forKey: @"c"];
-	[indexes setObject: index forKey: @"h"];
-	[indexes setObject: index forKey: @"cpp"];
-	[indexes setObject: index forKey: @"cc"];
+	[newIndexes setObject: index forKey: @"h"];
+	[newIndexes setObject: index forKey: @"m"];
+	[newIndexes setObject: index forKey: @"c"];
+	[newIndexes setObject: index forKey: @"cpp"];
+	[newIndexes setObject: index forKey: @"cc"];
+
+	return newIndexes;
+}
+
+- (void)clear
+{
+	indexes = [self newIndexes];
 	files = [NSMutableDictionary new];
 	bundles = [NSMutableDictionary new];
 	bundleClasses = [NSMutableDictionary new];
+	classes = [NSMutableDictionary new];
+	protocols = [NSMutableDictionary new];
+	globals = [NSMutableDictionary new];
+	functions = [NSMutableDictionary new];
+}
+
+- (id)init
+{
+	SUPERINIT
+	
+	[self clear];
+
 	int count = objc_getClassList(NULL, 0);
 	Class *classList = (__unsafe_unretained Class *)calloc(sizeof(Class), count);
 	objc_getClassList(classList, count);
@@ -60,51 +93,65 @@ static NSDictionary *fileClasses;
 	return self;
 }
 
-- (NSMutableDictionary*)programComponentsFromFilesForKey: (NSString*)key
+- (SCKClass*)classForName: (NSString*)aName
 {
-	NSMutableDictionary *components = [NSMutableDictionary new];
-	for (SCKSourceFile *file in [files objectEnumerator])
+	SCKClass *class = [classes objectForKey: aName];
+	
+	if (nil != class)
 	{
-		[components addEntriesFromDictionary: [file valueForKey: key]];
+		return class;
 	}
-	return components;
+
+	class = [SCKClass new];
+	[class setName: aName];
+	[classes setObject: class forKey: aName];
+	
+	return class;
 }
 
-- (NSDictionary*)classes
+- (SCKProtocol*)protocolForName: (NSString*)aName
 {
-	NSMutableDictionary* classes = [self programComponentsFromFilesForKey: @"classes"];
-	[classes addEntriesFromDictionary: bundleClasses];
-	return classes;
+	SCKProtocol *protocol = [protocols objectForKey: aName];
+
+	if (nil != protocol)
+	{
+		return protocol;
+	}
+	
+	protocol = [SCKProtocol new];
+	[protocol setName: aName];
+	[protocols setObject: protocol forKey: aName];
+	return protocol;
 }
 
-- (NSDictionary*)functions
+- (SCKFunction*)functionForName: (NSString*)aName
 {
-	return [self programComponentsFromFilesForKey: @"functions"];
+	SCKFunction *function = [functions objectForKey: aName];
+	
+	if (nil != function)
+	{
+		return function;
+	}
+	
+	function = [SCKFunction new];
+	[function setName: aName];
+	[functions setObject: function forKey: aName];
+	return function;
 }
 
-- (NSDictionary*)enumerationValues
+- (SCKGlobal*)globalForName: (NSString*)aName
 {
-	return [self programComponentsFromFilesForKey: @"enumerationValues"];
-}
-
-- (NSDictionary*)enumerations
-{
-	return [self programComponentsFromFilesForKey: @"enumerations"];
-}
-
-- (NSDictionary*)globals
-{
-	return [self programComponentsFromFilesForKey: @"globals"];
-}
-
-- (NSDictionary*)properties
-{
-	return [self programComponentsFromFilesForKey: @"properties"];
-}
-
-- (NSDictionary*)macros
-{
-	return [self programComponentsFromFilesForKey: @"macros"];
+	SCKGlobal *global = [globals objectForKey: aName];
+	
+	if (nil != global)
+	{
+		return global;
+	}
+	
+	global = [SCKGlobal new];
+	[global setName: aName];
+	[globals setObject: global forKey: aName];
+	return global;
 }
 
 - (SCKIndex*)indexForFileExtension: (NSString*)extension

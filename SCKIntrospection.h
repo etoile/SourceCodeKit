@@ -5,6 +5,7 @@
 @class SCKSourceLocation;
 @class NSMutableArray;
 @class NSMutableDictionary;
+@class SCKIvar, SCKProperty;
 
 /**
  * SCKProgramComponent is an abstract class representing properties of some
@@ -37,6 +38,11 @@
  * The parent of this component.  
  */
 @property (nonatomic, unsafe_unretained) SCKProgramComponent *parent;
+/**
+ * Returns whether the program component has only been parsed as a forward 
+ * declaration in the source code.
+ */
+@property (nonatomic, readonly, assign) BOOL isForwardDeclaration;
 @end
 
 /**
@@ -62,16 +68,29 @@
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
 @property (nonatomic, readonly, retain) NSMutableArray *ivars;
 @property (nonatomic, readonly, retain) NSMutableArray *properties;
-@property (nonatomic, readonly, retain) NSMutableArray *macros;
+- (SCKIvar*)ivarForName: (NSString *)name;
+- (SCKProperty*)propertyForName: (NSString *)aProperty;
 - (id) initWithClass: (Class)cls;
+@end
+
+@interface SCKProtocol : SCKProgramComponent
+@property (nonatomic, readonly, retain) NSMutableDictionary *requiredMethods;
+@property (nonatomic, readonly, retain) NSMutableDictionary *optionalMethods;
+@property (nonatomic, readonly, retain) NSMutableArray *requiredProperties;
+@property (nonatomic, readonly, retain) NSMutableArray *optionalProperties;
+- (SCKProperty*)requiredPropertyForName: (NSString *)aProperty;
+- (SCKProperty*)optionalPropertyForName: (NSString *)aProperty;
 @end
 
 @interface SCKCategory : SCKProgramComponent
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
+// TODO: Implement parsing properties in categories
+@property (nonatomic, readonly, retain) NSMutableArray *properties;
+- (SCKProperty*)propertyForName: (NSString *)aProperty;
 @end
 
 @interface SCKMethod : SCKTypedProgramComponent
-@property (nonatomic) BOOL isClassMethod;
+@property (nonatomic, assign) BOOL isClassMethod;
 @end
 
 @interface SCKIvar : SCKTypedProgramComponent
@@ -84,6 +103,8 @@
 @end
 
 @interface SCKProperty : SCKTypedProgramComponent
+@property (nonatomic, retain) NSString *attributes;
+@property (nonatomic, assign) BOOL isIBOutlet;
 @end
 
 @interface SCKMacro : SCKTypedProgramComponent

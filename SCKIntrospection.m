@@ -5,6 +5,12 @@
 
 @implementation SCKProgramComponent
 @synthesize parent, declaration, definition, documentation, name;
+
+- (BOOL)isForwardDeclaration
+{
+	return (declaration == nil);
+}
+
 - (NSString*)description
 {
 	return name;
@@ -36,7 +42,7 @@
 @end
 
 @implementation SCKClass
-@synthesize subclasses, superclass, categories, methods, ivars, properties, macros;
+@synthesize subclasses, superclass, categories, methods, ivars, properties;
 - (NSString*)description
 {
 	NSMutableString *str = [self.name mutableCopy];
@@ -48,6 +54,10 @@
 	{
 		[str appendFormat: @"\n\t\t%@", method];
 	}
+	for (id property in properties)
+	{
+		[str appendFormat: @"\n\t\t%@", property];
+	}
 	return str;
 }
 - (id)init
@@ -58,7 +68,6 @@
 	methods = [NSMutableDictionary new];
 	ivars = [NSMutableArray new];
 	properties = [NSMutableArray new];
-	macros = [NSMutableArray new];
 	return self;
 }
 - (id)initWithClass: (Class)cls
@@ -70,7 +79,7 @@
 	Ivar *ivarList = class_copyIvarList(cls, &count);
 	for (unsigned int i=0 ; i<count ; i++)
 	{
-		STACK_SCOPED SCKIvar *ivar = [SCKIvar new];
+		SCKIvar *ivar = [SCKIvar new];
 		ivar.name = [NSString stringWithUTF8String: ivar_getName(ivarList[i])];
 		[ivar setTypeEncoding: [NSString stringWithUTF8String: ivar_getTypeEncoding(ivarList[i])]];
 		ivar.parent = self;
@@ -84,7 +93,7 @@
 	Method *methodList = class_copyMethodList(cls, &count);
 	for (unsigned int i=0 ; i<count ; i++)
 	{
-		STACK_SCOPED SCKMethod *method = [SCKMethod new];
+		SCKMethod *method = [SCKMethod new];
 		method.name = [NSString stringWithUTF8String: sel_getName(method_getName(methodList[i]))];
 		[method setTypeEncoding: [NSString stringWithUTF8String: method_getTypeEncoding(methodList[i])]];
 		method.parent = self;
@@ -97,28 +106,77 @@
     
 	objc_property_t *propertyList = class_copyPropertyList(cls, &count);
 	for (unsigned int i=0 ; i<count; i++)
-    {
-        STACK_SCOPED SCKProperty *property = [SCKProperty new];
-        [property setName: [NSString stringWithUTF8String: property_getName(propertyList[i])]];
-        [property setParent: self];
-        [properties addObject: property];
-    }
+	{
+		SCKProperty *property = [SCKProperty new];
+		[property setName: [NSString stringWithUTF8String: property_getName(propertyList[i])]];
+		[property setParent: self];
+		[properties addObject: property];
+	}
 	if (count>0)
-    {
-        free(propertyList);
-    }
+	{
+		free(propertyList);
+	}
     
 	self.name = [[NSString alloc] initWithUTF8String: class_getName(cls)];    
 	return self;
 }
+
+- (SCKIvar*)ivarForName: (NSString*)name
+{
+	return [[ivars filteredCollectionWithBlock: ^ (SCKIvar *ivar) 
+	{ 
+		return [[ivar name] isEqualToString: name]; 
+	}] firstObject];
+}	
+
+- (SCKProperty*)propertyForName: (NSString*)name
+{
+	return [[properties filteredCollectionWithBlock: ^ (SCKProperty *prop) 
+	{ 
+		return [[prop name] isEqualToString: name]; 
+	}] firstObject];
+}
+	
+@end
+
+@implementation SCKProtocol
+@synthesize requiredMethods, optionalMethods, requiredProperties, optionalProperties;
+
+- (id)init
+{
+	SUPERINIT;
+	optionalMethods = [NSMutableDictionary new];
+	requiredMethods = [NSMutableDictionary new];
+	optionalProperties = [NSMutableArray new];
+	requiredProperties = [NSMutableArray new];
+	return self;
+}
+
+- (SCKProperty*)requiredPropertyForName: (NSString*)name
+{
+	return [[requiredProperties filteredCollectionWithBlock: ^ (SCKProperty *prop) 
+	{ 
+		return [[prop name] isEqualToString: name]; 
+	}] firstObject];
+}
+
+- (SCKProperty*)optionalPropertyForName: (NSString*)name
+{
+	return [[optionalProperties filteredCollectionWithBlock: ^ (SCKProperty *prop) 
+	{ 
+		return [[prop name] isEqualToString: name]; 
+	}] firstObject];
+}
+
 @end
 
 @implementation SCKCategory : SCKProgramComponent
-@synthesize methods;
+@synthesize methods, properties;
 - (id)init
 {
 	SUPERINIT;
 	methods = [NSMutableDictionary new];
+	properties = [NSMutableArray new];
 	return self;
 }
 - (NSString*)description
@@ -130,6 +188,15 @@
 	}
 	return str;
 }
+
+- (SCKProperty*)propertyForName: (NSString*)name
+{
+	return [[properties filteredCollectionWithBlock: ^ (SCKProperty *prop) 
+	{ 
+		return [[prop name] isEqualToString: name]; 
+	}] firstObject];
+}
+
 @end
 
 @implementation SCKMethod
@@ -147,7 +214,9 @@
 @implementation SCKIvar @end
 @implementation SCKFunction @end
 @implementation SCKGlobal @end
-@implementation SCKProperty @end
+@implementation SCKProperty
+@synthesize attributes, isIBOutlet;
+@end
 @implementation SCKMacro @end
 @implementation SCKEnumeration
 @synthesize values;
