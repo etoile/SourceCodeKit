@@ -46,24 +46,13 @@ for LanguageKit).
 Mac OS X support
 ----------------
 
-**Warning:** Xcode 4 is required to build the project.
+**Warning:** Xcode 4 or greater is required to build the project.
 
-For Mac OS X, you must check out or download LLVM/Clang source code. You don't 
-have to compile Clang, but the Xcode project requires libclang headers that are 
-are not packaged inside the Xcode application bundle.
+For convenience, SourceCodeKit links to a private copy of libclang.dylib located at:
 
-For the record, the built-in libclang from Xcode is presently located at: 
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib
 
-<em>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib</em>
-
-To check out the Clang repository, launch the Terminal, in the shell just do:
-
-	svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
-	cd <path to SourceCodeKit>
-	ln -s <path to Clang repository>/include/clang-c .
-	
-This should create a local symbolic link pointing to the Clang headers. That's 
-all you need to build the SourceCodeKit target.
+We have provided the necessary libclang headers in the 'clang-c' directory.
 
 
 Trouble
