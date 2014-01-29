@@ -37,9 +37,6 @@ SourceCodeKit TODO
 
 - IBOulet parsing for ivars
 
-- Add Runtime parsing tests e.g. TestRuntimeParsing.m similar to TestClangParsing.m
-
-
 Open Questions
 --------------
 

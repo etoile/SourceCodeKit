@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5236680D1897E2AB000FDD67 /* TestRuntimeParsing.m in Sources */ = {isa = PBXBuildFile; fileRef = 5236680A1897E2AB000FDD67 /* TestRuntimeParsing.m */; };
 		601C523817253D68002E55C6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFDBD16FFD31700D01AAB /* Foundation.framework */; };
 		601C523917253D6D002E55C6 /* SourceCodeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFDB516FFD31700D01AAB /* SourceCodeKit.framework */; };
 		601C523A17253D7F002E55C6 /* TestCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 601C508A17229599002E55C6 /* TestCommon.m */; };
-		601C523B17253D7F002E55C6 /* TestClangParsing.m in Sources */ = {isa = PBXBuildFile; fileRef = 601C508817229599002E55C6 /* TestClangParsing.m */; };
 		601C523D17253DBA002E55C6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFDBD16FFD31700D01AAB /* Foundation.framework */; };
 		601C529817253F30002E55C6 /* UnitKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 601C528F17253F20002E55C6 /* UnitKit.framework */; };
 		601C52A517254D24002E55C6 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFDBB16FFD31700D01AAB /* AppKit.framework */; };
@@ -133,6 +133,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5236680A1897E2AB000FDD67 /* TestRuntimeParsing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestRuntimeParsing.m; path = Tests/TestRuntimeParsing.m; sourceTree = "<group>"; };
 		601C508817229599002E55C6 /* TestClangParsing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestClangParsing.m; path = Tests/TestClangParsing.m; sourceTree = "<group>"; };
 		601C508917229599002E55C6 /* TestCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestCommon.h; path = Tests/TestCommon.h; sourceTree = "<group>"; };
 		601C508A17229599002E55C6 /* TestCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestCommon.m; path = Tests/TestCommon.m; sourceTree = "<group>"; };
@@ -205,6 +206,7 @@
 				601C508917229599002E55C6 /* TestCommon.h */,
 				601C508A17229599002E55C6 /* TestCommon.m */,
 				601C508817229599002E55C6 /* TestClangParsing.m */,
+				5236680A1897E2AB000FDD67 /* TestRuntimeParsing.m */,
 				601C50D517253040002E55C6 /* AB.h */,
 				601C50D617253040002E55C6 /* AB.m */,
 			);
@@ -507,8 +509,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				601C523A17253D7F002E55C6 /* TestCommon.m in Sources */,
-				601C523B17253D7F002E55C6 /* TestClangParsing.m in Sources */,
 				601C52AE17255B15002E55C6 /* AB.m in Sources */,
+				5236680D1897E2AB000FDD67 /* TestRuntimeParsing.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

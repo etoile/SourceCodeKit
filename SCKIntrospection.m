@@ -109,6 +109,7 @@
 	{
 		SCKProperty *property = [SCKProperty new];
 		[property setName: [NSString stringWithUTF8String: property_getName(propertyList[i])]];
+		[property setTypeEncoding: [NSString stringWithUTF8String: property_getAttributes(propertyList[i])]];
 		[property setParent: self];
 		[properties addObject: property];
 	}

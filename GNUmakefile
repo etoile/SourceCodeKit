@@ -19,7 +19,8 @@ ${FRAMEWORK_NAME}_OBJC_FILES = \
 ${BUNDLE_NAME}_OBJC_FILES += \
 	Tests/ParsingTestFiles/AB.m\
 	Tests/TestClangParsing.m\
-	Tests/TestCommon.m
+	Tests/TestCommon.m\
+	Tests/TestRuntimeParsing.m
 
 ${FRAMEWORK_NAME}_HEADER_FILES = \
 	SourceCodeKit.h\
