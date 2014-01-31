@@ -18,6 +18,7 @@
 		601C52AC172551F8002E55C6 /* AB.m in CopyFiles */ = {isa = PBXBuildFile; fileRef = 601C50D617253040002E55C6 /* AB.m */; };
 		601C52AD17255200002E55C6 /* AB.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 601C50D517253040002E55C6 /* AB.h */; };
 		601C52AE17255B15002E55C6 /* AB.m in Sources */ = {isa = PBXBuildFile; fileRef = 601C50D617253040002E55C6 /* AB.m */; };
+		6091F962189BDBC000A5E2AC /* TestClangParsing.m in Sources */ = {isa = PBXBuildFile; fileRef = 601C508817229599002E55C6 /* TestClangParsing.m */; };
 		609CFDE216FFD38D00D01AAB /* SCKClangSourceFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDD116FFD38D00D01AAB /* SCKClangSourceFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		609CFDE316FFD38D00D01AAB /* SCKClangSourceFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 609CFDD216FFD38D00D01AAB /* SCKClangSourceFile.m */; };
 		609CFDE416FFD38D00D01AAB /* SCKCodeCompletionResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 609CFDD316FFD38D00D01AAB /* SCKCodeCompletionResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -511,6 +512,7 @@
 				601C523A17253D7F002E55C6 /* TestCommon.m in Sources */,
 				601C52AE17255B15002E55C6 /* AB.m in Sources */,
 				5236680D1897E2AB000FDD67 /* TestRuntimeParsing.m in Sources */,
+				6091F962189BDBC000A5E2AC /* TestClangParsing.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
