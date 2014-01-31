@@ -5,9 +5,7 @@ SourceCodeKit TODO
 
 	- Protocol method parsing e.g. -testMethodInProtocol
 	- Protocol property parsing
-	- Category method parsing e.g. -testMethodInCategory
-	- Category property parsing
-
+	
 - Static variable parsing
 
 - Macro parsing
@@ -30,8 +28,6 @@ SourceCodeKit TODO
 
 		- turn -optionalProperties and -requiredProperties into -optionalPropertyNames and -requiredPropertyNames
 		- or add a property such as isOptional to SCKProperty
-
-- Property parsing for categories
 
 - Finish property attribute parsing
 

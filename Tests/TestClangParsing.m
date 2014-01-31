@@ -119,12 +119,90 @@ static SCKSourceCollection *sourceCollection = nil;
 	UKTrue([[protocol3 definition] offset] > [[protocol1 definition] offset]);
 }
 
+- (void)testCategory
+{
+	SCKClass *classA = [self parsedClassForName: @"A"];
+	SCKClass *classB = [self parsedClassForName: @"B"];
+	NSMutableDictionary *categories = [classA categories];
+	SCKCategory *aExtension = [categories objectForKey: @"AExtension"];
+	
+	UKNotNil(aExtension);
+	UKStringsEqual(@"AExtension", [aExtension name]);
+	UKStringsEqual(@"A", [[aExtension parent] name]);
+
+	UKStringsEqual(@"AB.h", [[[aExtension declaration] file] lastPathComponent]);
+	UKTrue([[classA declaration] offset] < [[aExtension declaration] offset]);
+	UKTrue([[classB declaration] offset] > [[aExtension declaration] offset]);
+
+	UKStringsEqual(@"AB.m", [[[aExtension definition] file] lastPathComponent]);
+	UKTrue([[classA definition] offset] < [[aExtension definition] offset]);
+	UKTrue([[classB definition] offset] > [[aExtension definition] offset]);
+}
+
+- (void)testMethodInCategory
+{
+	SCKClass *classA = [self parsedClassForName: @"A"];
+	NSMutableDictionary *categories = [classA categories];
+	SCKCategory *aExtension = [categories objectForKey: @"AExtension"];
+	NSMutableDictionary *methods = [aExtension methods];
+	NSSet *methodNames = S(@"propertyInsideCategory",
+		@"setPropertyInsideCategory:", @"methodInCategory");
+
+	UKObjectsEqual(methodNames, SA([methods allKeys]));
+	UKObjectsEqual(SA([methods allKeys]), SA((id)[[[methods allValues] mappedCollection] name]));
+	
+	SCKMethod *methodInCategory = [methods objectForKey: @"methodInCategory"];
+	SCKClass *classB = [self parsedClassForName: @"B"];
+	/* The numbers in the signature encoding are platform-dependent, but the other characters
+	   remain valid accross platforms */
+	NSCharacterSet *charset = [NSCharacterSet decimalDigitCharacterSet];
+	NSString *methodInCategoryTypeEncoding = [[[methodInCategory typeEncoding]
+		componentsSeparatedByCharactersInSet: charset] componentsJoinedByString: @""];
+
+	UKObjectsSame(classA, [methodInCategory parent]);
+	UKStringsEqual(@"v@:", methodInCategoryTypeEncoding);
+
+	UKFalse([methodInCategory isClassMethod]);
+	
+	UKStringsEqual(@"AB.h", [[[methodInCategory declaration] file] lastPathComponent]);
+	UKTrue([[aExtension declaration] offset] < [[methodInCategory declaration] offset]);
+	UKTrue([[classB declaration] offset] > [[methodInCategory declaration] offset]);
+
+	UKStringsEqual(@"AB.m", [[[methodInCategory definition] file] lastPathComponent]);
+	UKTrue([[aExtension definition] offset] < [[methodInCategory definition] offset]);
+	UKTrue([[classB definition] offset] > [[methodInCategory definition] offset]);
+}
+
+- (void)testPropertyInCategory
+{
+	SCKClass *classA = [self parsedClassForName: @"A"];
+	SCKCategory *aExtension = [[classA categories] objectForKey: @"AExtension"];
+	NSMutableArray *properties = [aExtension properties];
+
+	UKObjectsEqual(A(@"propertyInsideCategory"), (id)[[properties mappedCollection] name]);
+
+	SCKProperty *propertyInsideCategory = [properties firstObject];
+	SCKClass *classB = [self parsedClassForName: @"B"];
+
+	UKObjectsSame(classA, [propertyInsideCategory parent]);
+	UKStringsEqual(@"T@\"NSString\"", [propertyInsideCategory typeEncoding]);
+
+	UKStringsEqual(@"AB.h", [[[propertyInsideCategory declaration] file] lastPathComponent]);
+	UKTrue([[aExtension declaration] offset] < [[propertyInsideCategory declaration] offset]);
+	UKTrue([[classB declaration] offset] > [[propertyInsideCategory declaration] offset]);
+
+	UKStringsEqual(@"AB.m", [[[propertyInsideCategory definition] file] lastPathComponent]);
+	UKTrue([[aExtension definition] offset] < [[propertyInsideCategory definition] offset]);
+	UKTrue([[classB definition] offset] > [[propertyInsideCategory definition] offset]);
+}
+
 - (void)testMethod
 {
 	SCKClass *classA = [self parsedClassForName: @"A"];
 	NSMutableDictionary *methods = [classA methods];
 	NSSet *methodNames = S(@"text", @"setText:", @"wakeUpAtDate:",
-		@"sleepLater:", @"sleepNow", @"methodInCategory");
+		@"sleepLater:", @"sleepNow", @"propertyInsideCategory",
+		@"setPropertyInsideCategory:", @"methodInCategory");
 
 	UKObjectsEqual(methodNames, SA([methods allKeys]));
 	UKObjectsEqual(SA([methods allKeys]), SA((id)[[[methods allValues] mappedCollection] name]));
@@ -189,6 +267,8 @@ static SCKSourceCollection *sourceCollection = nil;
 	UKStringsEqual(@"AB.h", [[[button declaration] file] lastPathComponent]);
 	UKTrue([[classB declaration] offset] < [[button declaration] offset]);
 	UKTrue([[text2 declaration] offset] > [[button declaration] offset]);
+
+	// TODO: Parse property definition in @implementation (e.g. @synthesize or @dynamic)
 }
 
 - (void)testMacro

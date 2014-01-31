@@ -84,7 +84,6 @@
 
 @interface SCKCategory : SCKProgramComponent
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
-// TODO: Implement parsing properties in categories
 @property (nonatomic, readonly, retain) NSMutableArray *properties;
 - (SCKProperty*)propertyForName: (NSString *)aProperty;
 @end
