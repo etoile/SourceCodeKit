@@ -19,12 +19,13 @@ enum enum2 {value4, value5, value6};
 
 
 @protocol Protocol1 <NSObject>
-@property NSString *string;
 @required
+@property NSString *string;
 - (void)hi;
 - (void)goodbye;
 @optional
-- (void)farewell;
+@property NSDate *date;
++ (void)farewell;
 @end
 
 @protocol Protocol2;

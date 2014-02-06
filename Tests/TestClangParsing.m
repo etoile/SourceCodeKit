@@ -119,6 +119,82 @@ static SCKSourceCollection *sourceCollection = nil;
 	UKTrue([[protocol3 definition] offset] > [[protocol1 definition] offset]);
 }
 
+// NOTE: libclang versions prior to 21 parse all protocol methods as required.
+- (void)testMethodInProtocol
+{
+	SCKProtocol *protocol1 = [self parsedProtocolForName: @"Protocol1"];
+	NSMutableDictionary *requiredMethods = [protocol1 requiredMethods];
+	NSMutableDictionary *optionalMethods = [protocol1 optionalMethods];
+#if CINDEX_VERSION >= 21
+	NSSet *requiredMethodsNames = S(@"goodbye", @"hi", @"string", @"setString:");
+	NSSet *optionalMethodsNames = S(@"date", @"farewell", @"setDate:");
+#else
+	NSSet *requiredMethodsNames = S(@"goodbye", @"hi", @"string", @"setString:",
+		@"date", @"farewell", @"setDate:");
+#endif
+	
+	UKObjectsEqual(requiredMethodsNames, SA([requiredMethods allKeys]));
+	UKObjectsEqual(SA([requiredMethods allKeys]), SA((id)[[[requiredMethods allValues] mappedCollection] name]));
+
+#if CINDEX_VERSION >= 21
+	UKObjectsEqual(optionalMethodsNames, SA([optionalMethods allKeys]));
+	UKObjectsEqual(SA([optionalMethods allKeys]), SA((id)[[[optionalMethods allValues] mappedCollection] name]));
+#endif
+
+	SCKMethod *hi = [requiredMethods objectForKey: @"hi"];
+#if CINDEX_VERSION >= 21
+	SCKMethod *farewell = [optionalMethods objectForKey: @"farewell"];
+#else
+	SCKMethod *farewell = [requiredMethods objectForKey: @"farewell"];
+#endif
+	SCKProtocol *protocol2 = [self parsedProtocolForName: @"Protocol2"];
+	
+	/* The numbers in the signature encoding are platform-dependent, but the other characters
+	   remain valid accross platform */
+	NSCharacterSet *charSet = [NSCharacterSet decimalDigitCharacterSet];
+	NSString *farewellTypeEncoding = [[[farewell typeEncoding] componentsSeparatedByCharactersInSet: charSet] componentsJoinedByString: @""];
+	
+	UKObjectsSame(protocol1, [farewell parent]);
+	UKStringsEqual(@"v@:", farewellTypeEncoding);
+	
+	UKFalse([hi isClassMethod]);
+	UKTrue([farewell isClassMethod]);
+	
+	UKStringsEqual(@"AB.h", [[[farewell declaration] file] lastPathComponent]);
+	UKTrue([[protocol1 declaration] offset] < [[farewell declaration] offset]);
+	UKTrue([[hi declaration] offset] < [[farewell declaration] offset]);
+	UKTrue([[farewell declaration] offset] > [[protocol2 declaration] offset]);
+}
+
+// NOTE: libclang versions prior to 21 parse all protocol properties as required.
+- (void)testPropertyInProtocol
+{
+	SCKProtocol *protocol1 = [self parsedProtocolForName: @"Protocol1"];
+	NSMutableArray *requiredProperties = [protocol1 requiredProperties];
+	NSMutableArray *optionalProperties = [protocol1 optionalProperties];
+
+#if CINDEX_VERSION >= 21
+	UKObjectsEqual(A(@"string"), (id)[[requiredProperties mappedCollection] name]);
+	UKObjectsEqual(A(@"date"), (id)[[optionalProperties mappedCollection] name]);
+#else
+	UKObjectsEqual(A(@"string", @"date"), (id)[[requiredProperties mappedCollection] name]);
+#endif
+
+	SCKProperty *string = [requiredProperties firstObject];
+#if CINDEX_VERSION >= 21
+	SCKProperty *date = [optionalProperties firstObject];
+#else
+	SCKProperty *date = [requiredProperties lastObject];
+#endif
+
+	UKObjectsSame(protocol1, [string parent]);
+	UKStringsEqual(@"T@\"NSString\"", [string typeEncoding]);
+	
+	UKStringsEqual(@"AB.h", [[[string declaration] file] lastPathComponent]);
+	UKTrue([[protocol1 declaration] offset] < [[string declaration] offset]);
+	UKTrue([[date declaration] offset] > [[string declaration] offset]);
+}
+
 - (void)testCategory
 {
 	SCKClass *classA = [self parsedClassForName: @"A"];

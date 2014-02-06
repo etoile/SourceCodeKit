@@ -487,14 +487,22 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
           forMethod: (NSString*)methodName
    withTypeEncoding: (NSString*)typeEncoding
       isClassMethod: (BOOL)isClassMethod
-       isDefinition: (BOOL) isDefinition
+		 isRequired: (BOOL)isRequired
+       isDefinition: (BOOL)isDefinition
          inProtocol: (NSString*)protocolName
 {
-	// FIXME:
-	return;
 	SCKProtocol *protocol = [[self collection] protocolForName: protocolName];
-	SCKMethod *method = [[protocol requiredMethods] objectForKey: methodName];
-
+	SCKMethod *method = nil;
+	
+	if (isRequired)
+	{
+		method = [[protocol requiredMethods] objectForKey: methodName];
+	}
+	else
+	{
+		method = [[protocol optionalMethods] objectForKey: methodName];
+	}
+	
 	if (nil == method)
 	{
 		method = [SCKMethod new];
@@ -503,7 +511,14 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[method setIsClassMethod: isClassMethod];
 		[method setParent: protocol];
 		
-		[[protocol requiredMethods] setObject: method forKey: methodName];
+		if (isRequired)
+		{
+			[[protocol requiredMethods] setObject: method forKey: methodName];
+		}
+		else
+		{
+			[[protocol optionalMethods] setObject: method forKey: methodName];
+		}
 	}
 	
 	if (isDefinition)
@@ -521,10 +536,20 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
    withTypeEncoding: (NSString*)typeEncoding
          attributes: (CXObjCPropertyAttrKind)attributes
          isIBOutlet: (BOOL)isIBOutlet
+		 isRequired: (BOOL)isRequired
          inProtocol: (NSString*)protocolName
 {
 	SCKProtocol *protocol = [[self collection] protocolForName: protocolName];
-	SCKProperty *property = [protocol requiredPropertyForName: propertyName];
+	SCKProperty *property = nil;
+	
+	if (isRequired)
+	{
+		property = [protocol requiredPropertyForName: propertyName];
+	}
+	else
+	{
+		property = [protocol optionalPropertyForName: propertyName];
+	}
 
 	if (nil == property)
 	{
@@ -533,7 +558,14 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[property setTypeEncoding: typeEncoding];
 		[property setParent: protocol];
 		
-		[[protocol requiredProperties] addObject: property];
+		if (isRequired)
+		{
+			[[protocol requiredProperties] addObject: property];
+		}
+		else
+		{
+			[[protocol optionalProperties] addObject: property];
+		}
 	}
 	
 	[property setDeclaration: sourceLocation];
@@ -807,6 +839,9 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					{
 						SCOPED_STR(name, clang_getCursorSpelling(protocolCursor));
 						SCOPED_STR(type, clang_getDeclObjCTypeEncoding(protocolCursor));
+						SCKSourceLocation *location = [[SCKSourceLocation alloc]
+							initWithClangSourceLocation: clang_getCursorLocation(protocolCursor)];
+						BOOL isRequired = YES;
 								
 						switch (protocolCursor.kind)
 						{
@@ -815,12 +850,16 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 								CXObjCPropertyAttrKind attributes = 0;
 #if CINDEX_VERSION >= 21
 								attributes = clang_Cursor_getObjCPropertyAttributes(protocolCursor, 0);
+								isRequired = (clang_Cursor_isObjCOptional(protocolCursor) == 0);
+#else
+#warning Your libclang does not support checking for optional property declarations
 #endif
-								[self setLocation: sourceLocation
+								[self setLocation: location
 								      forProperty: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: type]
 								       attributes: attributes
 								       isIBOutlet: (CXCursor_IBOutletAttr == protocolCursor.kind)
+									   isRequired: isRequired
 								       inProtocol: [NSString stringWithUTF8String: protocolName]];
 
 								break;
@@ -828,12 +867,16 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 							case CXCursor_ObjCInstanceMethodDecl:
 							case CXCursor_ObjCClassMethodDecl:
 							{
-								// FIXME: It needs fixing when there is a proper API.
-								// Can't distinguish between required and optional methods declared inside a protocol.
-								[self setLocation: sourceLocation
+#if CINDEX_VERSION >= 21
+								isRequired = (clang_Cursor_isObjCOptional(protocolCursor) == 0);
+#else
+#warning Your libclang does not support checking for optional method declarations
+#endif
+								[self setLocation: location
 								        forMethod: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: type]
 								    isClassMethod: (CXCursor_ObjCClassMethodDecl == protocolCursor.kind)
+									   isRequired: isRequired
 								     isDefinition: clang_isCursorDefinition(protocolCursor)
 								       inProtocol: [NSString stringWithUTF8String: protocolName]];
 										

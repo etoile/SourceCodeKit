@@ -1,18 +1,11 @@
 SourceCodeKit TODO
 ==================
-
-- Additional libclang parsing tests
-
-	- Protocol method parsing e.g. -testMethodInProtocol
-	- Protocol property parsing
 	
 - Static variable parsing
 
 - Macro parsing
 
 - Adopted protocol parsing (for classes, categories and protocols)
-
-- Fix optional and required qualifier parsing once libclang supports them
 
 - Documentation extraction
 
