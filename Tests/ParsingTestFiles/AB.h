@@ -73,7 +73,7 @@ enum enum2 {value4, value5, value6};
 @interface C : B
 {
 	NSString *ivar1;
-	NSString *ivar2;
+	IBOutlet NSString *ivar2;
 	NSString *ivar3;
 }
 

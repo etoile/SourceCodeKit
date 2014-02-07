@@ -93,6 +93,7 @@
 @end
 
 @interface SCKIvar : SCKTypedProgramComponent
+@property (nonatomic, assign) BOOL isIBOutlet;
 @end
 
 @interface SCKFunction : SCKTypedProgramComponent

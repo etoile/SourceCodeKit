@@ -317,7 +317,10 @@ static SCKSourceCollection *sourceCollection = nil;
 	UKObjectsEqual(A(@"ivar1", @"ivar2", @"ivar3"), (id)[[ivars mappedCollection] name]);
 	
 	SCKIvar *ivar1 = [ivars firstObject];
-	SCKIvar *ivar2 = [ivars lastObject];
+	SCKIvar *ivar2 = [ivars objectAtIndex: 1];
+
+	UKFalse([ivar1 isIBOutlet]);
+	UKTrue([ivar2 isIBOutlet]);
 
 	UKObjectsSame(classC, [ivar1 parent]);
 	UKStringsEqual(@"@", [ivar1 typeEncoding]);
@@ -336,6 +339,9 @@ static SCKSourceCollection *sourceCollection = nil;
 
 	SCKProperty *button = [properties firstObject];
 	SCKProperty *text2 = [properties lastObject];
+
+	UKTrue([button isIBOutlet]);
+	UKFalse([text2 isIBOutlet]);
 
 	UKObjectsSame(classB, [button parent]);
 	UKStringsEqual(@"T@\"NSButton\",&,N", [button typeEncoding]);

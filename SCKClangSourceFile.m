@@ -237,6 +237,23 @@ static NSString *classNameFromCategory(CXCursor category)
 	return className;
 }
 
+static BOOL isIBOutletFromPropertyOrIvar(CXCursor cursor)
+{
+	__block BOOL isIBOutlet = NO;
+
+	clang_visitChildrenWithBlock(cursor,
+		^ enum CXChildVisitResult (CXCursor subcursor, CXCursor parent)
+		{
+			if (CXCursor_IBOutletAttr == subcursor.kind)
+			{
+				isIBOutlet = YES;
+				return CXChildVisit_Break;
+			}
+			return CXChildVisit_Continue;
+		});
+	return isIBOutlet;
+}
+
 - (void) setLocation: (SCKSourceLocation*)aLocation
             forClass: (NSString*)aClassName
       withSuperclass: (NSString*)aSuperclassName
@@ -451,6 +468,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 - (void)setLocation: (SCKSourceLocation*)sourceLocation
             forIvar: (NSString*)ivarName
    withTypeEncoding: (NSString*)typeEncoding
+         isIBOutlet: (BOOL)isIBOutlet
             inClass: (NSString*)className
 {
 	SCKClass *class = [[self collection] classForName: className];
@@ -461,6 +479,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		ivar = [SCKIvar new];
 		[ivar setName: ivarName];
 		[ivar setTypeEncoding: typeEncoding];
+		[ivar setIsIBOutlet: isIBOutlet];
 		[ivar setParent: class];
 		
 		[[class ivars] addObject: ivar];
@@ -663,6 +682,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 								[self setLocation: sourceLocation
 								          forIvar: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: typeEncoding]
+								       isIBOutlet: isIBOutletFromPropertyOrIvar(classCursor)
 								          inClass: [NSString stringWithUTF8String: className]];
 								break;
 							}
@@ -681,7 +701,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 								      forProperty: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: type]
 								       attributes: attributes
-								       isIBOutlet: (classCursor.kind == CXCursor_IBOutletAttr)
+								       isIBOutlet: isIBOutletFromPropertyOrIvar(classCursor)
 								          inClass: [NSString stringWithUTF8String: className]];
 								break;
 							}

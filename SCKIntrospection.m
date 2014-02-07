@@ -212,7 +212,9 @@
 @synthesize typeEncoding;
 @end
 
-@implementation SCKIvar @end
+@implementation SCKIvar
+@synthesize isIBOutlet;
+@end
 @implementation SCKFunction @end
 @implementation SCKGlobal @end
 @implementation SCKProperty
