@@ -974,6 +974,8 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 						foundType = NO;
 						e.name = name;
 						e.declaration = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+						[enumerations setObject: e forKey: name];
+						[[self collection] addEnumeration: e];
 					}
 					else
 					{
@@ -1014,7 +1016,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 							{
 								[enumerationValues setObject: v
 								                      forKey: vName];
-							}
+								[[self collection] addEnumerationValue: v];							}
 						}
 						return CXChildVisit_Continue;
 					});

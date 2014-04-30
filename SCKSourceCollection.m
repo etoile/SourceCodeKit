@@ -21,9 +21,11 @@ static NSDictionary *fileClasses;
 	NSMutableDictionary *protocols;
 	NSMutableDictionary *functions;
 	NSMutableDictionary *globals;
+	NSMutableDictionary *enumerations;
+	NSMutableDictionary *enumerationValues;
 }
 
-@synthesize files, bundles, classes, protocols, globals, functions;
+@synthesize files, bundles, classes, protocols, globals, functions, enumerations, enumerationValues;
 
 + (void)initialize
 {
@@ -60,6 +62,8 @@ static NSDictionary *fileClasses;
 	protocols = [NSMutableDictionary new];
 	globals = [NSMutableDictionary new];
 	functions = [NSMutableDictionary new];
+	enumerations = [NSMutableDictionary new];
+	enumerationValues = [NSMutableDictionary new];
 }
 
 - (id)init
@@ -152,6 +156,16 @@ static NSDictionary *fileClasses;
 	[global setName: aName];
 	[globals setObject: global forKey: aName];
 	return global;
+}
+
+- (void)addEnumeration: (SCKEnumeration *)anEnum 
+{
+	[enumerations setObject: anEnum forKey: [anEnum name]];
+}
+
+- (void)addEnumerationValue: (SCKEnumerationValue *)anEnumValue
+{
+	[enumerationValues setObject: anEnumValue forKey: [anEnumValue name]];
 }
 
 - (SCKIndex*)indexForFileExtension: (NSString*)extension

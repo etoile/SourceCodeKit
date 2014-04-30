@@ -2,6 +2,7 @@
 
 @class NSCache, NSDictionary, NSMutableDictionary, NSArray;
 @class SCKIndex, SCKSourceFile, SCKClass, SCKProtocol, SCKFunction, SCKGlobal;
+@class SCKEnumeration, SCKEnumerationValue;
 
 /**
  * A source collection encapsulates a group of (potentially cross-referenced)
@@ -15,6 +16,32 @@
 @property (nonatomic, readonly) NSDictionary *protocols;
 @property (nonatomic, readonly) NSDictionary *functions;
 @property (nonatomic, readonly) NSDictionary *globals;
+/**
+ * The parsed enumerations in the source files.
+ *
+ * Unlike other symbol dictionaries, the scope of an enumeration is per file 
+ * (there is no global namespace for enumeration names), for conveniency we 
+ * provide this dictionary that contains all parsed enumerations merged 
+ * together. 
+ * 
+ * If two enumeration names collide, the one that is returned in the 
+ * dictionary is undefined. For this case, -[SCKClangSourceFile enumerations] 
+ * must be used to retrieve the correct enumeration.
+ */
+@property (nonatomic, readonly) NSDictionary *enumerations;
+/**
+ * The parsed enumeration values in the source files.
+ *
+ * Unlike other symbol dictionaries, the scope of an enumeration value is per 
+ * file (there is no global namespace for enumeration value names), for 
+ * conveniency we provide this dictionary that contains all parsed enumeration 
+ * values merged together.
+ * 
+ * If two enumeration value names collide, the one that is returned in the 
+ * dictionary is undefined. For this case, -[SCKClangSourceFile enumerationValues] 
+ * must be used to retrieve the correct enumeration.
+ */
+@property (nonatomic, readonly) NSDictionary *enumerationValues;
 
 /**
  * Returns an existing class if one was already parsed under the same name in 
@@ -50,6 +77,14 @@
  * instance until -clear is called.
  */
 - (SCKGlobal*)globalForName: (NSString*)aName;
+/**
+ * Adds a parsed enumeration to -enumerations.
+ */
+- (void)addEnumeration: (SCKEnumeration *)anEnum;
+/**
+ * Adds a parsed enumeration value to -enumerationValues.
+ */
+- (void)addEnumerationValue: (SCKEnumerationValue *)anEnumValue;
 
 /**
  * Generates a new source file object corresponding to the specified on-disk
