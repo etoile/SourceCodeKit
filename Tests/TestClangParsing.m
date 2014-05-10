@@ -434,4 +434,28 @@ static SCKSourceCollection *sourceCollection = nil;
 	UKTrue([[kGlobal2 definition] offset] > [[kGlobal1 definition] offset]);
 }
 
+- (void)testStaticVariable
+{
+	SCKClangSourceFile *sourceFile = [self parsedFileForName: @"AB.h"];
+	
+	UKObjectsEqual(A(@"staticVar1", @"staticVar2"), [[[[sourceFile variables] allValues] mappedCollection] name]);
+	
+	UKIntsEqual(2, (int)[[sourceFile variables] count]);
+	
+	SCKGlobal *staticVar1 = [[sourceFile variables] objectForKey: @"staticVar1"];
+	SCKGlobal *staticVar2 = [[sourceFile variables] objectForKey: @"staticVar2"];
+	SCKFunction *function2 = [[self parsedFunctionsForNames: A(@"function2")] firstObject];
+	
+	UKNotNil(staticVar1);
+	UKNotNil(staticVar2);
+	
+	UKStringsEqual(@"staticVar1", [staticVar1 name]);
+	UKStringsEqual(@"staticVar2", [staticVar2 name]);
+	
+	UKStringsEqual(@"AB.h", [[[staticVar1 declaration] file] lastPathComponent]);
+	UKTrue([[staticVar1 declaration] offset] < [[staticVar2 declaration] offset]);
+	UKTrue([[staticVar2 declaration] offset] > [[function2 declaration] offset]);
+}
+
+
 @end

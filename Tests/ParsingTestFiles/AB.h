@@ -14,6 +14,9 @@ char function2(char arg1);
 extern NSDate *kGlobal1;
 extern NSString *kGlobal2;
 
+static int *staticVar1;
+static float *staticVar2;
+
 enum enum1 {value1, value2, value3};
 enum enum2 {value4, value5, value6};
 
