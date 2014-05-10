@@ -47,7 +47,7 @@
  * Parses the contents of the file.  Must be called before reapplying
  * highlighting after the file has changed.
  */
-- (void)reparse;
+- (void)reparseWithOption: (short)parsingOption;
 /**
  * Performs lexical highlighting on the entire file.
  */

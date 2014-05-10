@@ -1,9 +1,7 @@
 SourceCodeKit TODO
 ==================
-	
-- Static variable parsing
 
-- Macro parsing
+- Static variable parsing
 
 - Adopted protocol parsing (for classes, categories and protocols)
 
@@ -15,7 +13,7 @@ SourceCodeKit TODO
 
 	- the method ordering must be captured twice, once for the declaration side and once for the definition side
 
-	- we could switch SCKClass/Protocol/Category to a method array rather than a method dictionary, or add a orderedMethodNames property to SCKClass/Protocol/Category. 
+	- we could switch SCKClass/Protocol/Category to a method array rather than a method dictionary, or add a orderedMethodNames property to SCKClass/Protocol/Category.
 
 	- for SCKProtocol, turning the method dictionary into an array would imply to:
 
@@ -40,4 +38,3 @@ Open Questions
 	There may be some use cases where you want to search for a static variable that's declared somewhere, but I don't see that this is very important because if you are looking for a static then you must know what compilation unit it's in...
 
 	My main concern is that we're hanging on to a lot of libclang parser state, which is a lot of memory (10-20MB/file) that we don't need.  Having some protocol for discarding the parser state but retaining the indexing state might also be an option.
-	

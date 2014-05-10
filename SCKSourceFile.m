@@ -15,7 +15,7 @@
 {
 	return [[self alloc] initUsingIndex: (SCKIndex*)anIndex];
 }
-- (void)reparse {}
+- (void)reparseWithOption: (short)parsingOption {}
 - (void)lexicalHighlightFile {}
 - (void)syntaxHighlightFile {}
 - (void)syntaxHighlightRange: (NSRange)r {}
@@ -23,4 +23,3 @@
 - (void)collectDiagnostics {}
 - (SCKCodeCompletionResult*)completeAtLocation: (NSUInteger) location { return nil; }
 @end
-
