@@ -42,7 +42,7 @@
 @end
 
 @implementation SCKClass
-@synthesize subclasses, superclass, categories, methods, ivars, properties;
+@synthesize subclasses, superclass, categories, methods, ivars, properties, adoptedProtocols;
 - (NSString*)description
 {
 	NSMutableString *str = [self.name mutableCopy];
@@ -68,6 +68,7 @@
 	methods = [NSMutableDictionary new];
 	ivars = [NSMutableArray new];
 	properties = [NSMutableArray new];
+	adoptedProtocols = [NSMutableDictionary new];
 	return self;
 }
 - (id)initWithClass: (Class)cls
@@ -141,7 +142,7 @@
 @end
 
 @implementation SCKProtocol
-@synthesize requiredMethods, optionalMethods, requiredProperties, optionalProperties;
+@synthesize requiredMethods, optionalMethods, requiredProperties, optionalProperties, adoptedProtocols;
 
 - (id)init
 {
@@ -150,8 +151,34 @@
 	requiredMethods = [NSMutableDictionary new];
 	optionalProperties = [NSMutableArray new];
 	requiredProperties = [NSMutableArray new];
+	adoptedProtocols [NSMutableDictionary new];
 	return self;
 }
+
+- (NSString *)description
+{
+	NSMutableString *str = [NSMutableString stringWithFormat: @"%@ (%@)", self.parent.name, self.name];
+	
+	for (id optionalMathod in [optionalMethods allValues])
+	{
+		[str appendFormat: @"\n\t%@", optionalMathod];
+	}
+	for (id requiredMethod in [requiredMethods allValues])
+	{
+		[str appendFormat: @"\n\t%@", requiredMethod];
+	}
+	for (id optionalProperty in optionalProperties)
+	{
+		[str appendFormat: @"\n\t%@", optionalProperty];
+	}
+	for (id requiredProperty in requiredProperties)
+	{
+		[str appendFormat: @"\n\t%@", requiredProperty];
+	}
+	
+	return str;
+}
+
 
 - (SCKProperty*)requiredPropertyForName: (NSString*)name
 {
@@ -172,12 +199,13 @@
 @end
 
 @implementation SCKCategory : SCKProgramComponent
-@synthesize methods, properties;
+@synthesize methods, properties, adoptedProtocols;
 - (id)init
 {
 	SUPERINIT;
 	methods = [NSMutableDictionary new];
 	properties = [NSMutableArray new];
+	adoptedProtocols = [NSMutableDictionary new];
 	return self;
 }
 - (NSString*)description
@@ -186,6 +214,10 @@
 	for (id method in methods)
 	{
 		[str appendFormat: @"\n\t%@", method];
+	}
+	for (id property in properties)
+	{
+		[str appendFormat: @"\n\t%@", property];
 	}
 	return str;
 }

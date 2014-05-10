@@ -5,8 +5,6 @@ SourceCodeKit TODO
 
 - Macro parsing
 
-- Adopted protocol parsing (for classes, categories and protocols)
-
 - Documentation extraction
 
 - Capture the method parsing order (for DocGenerator needs)

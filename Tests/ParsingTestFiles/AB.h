@@ -30,11 +30,11 @@ enum enum2 {value4, value5, value6};
 
 @protocol Protocol2;
 
-@protocol Protocol3 <Protocol1, Protocol2>
+@protocol Protocol3 <Protocol1>
 @end
 
 
-@interface A : NSObject
+@interface A : NSObject <Protocol1, Protocol3>
 {
 	NSString *text;
 }
@@ -47,7 +47,7 @@ enum enum2 {value4, value5, value6};
 
 @end
 
-@interface A (AExtension)
+@interface A (AExtension) <Protocol1, Protocol3>
 
 @property NSString *propertyInsideCategory;
 
