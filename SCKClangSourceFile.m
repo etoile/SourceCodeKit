@@ -38,17 +38,36 @@ static void freestring(CXString *str)
 
 @synthesize file, offset;
 
-- (id)initWithClangSourceLocation: (CXSourceLocation)l
+- (id)initWithClangSourceLocation: (CXSourceLocation)sourceLocation
 {
-	SUPERINIT;
-	CXFile f;
-	unsigned o;
-	clang_getInstantiationLocation(l, &f, 0, 0, &o);
-	offset = o;
-	SCOPED_STR(fileName, clang_getFileName(f));
-	file = [[NSString alloc] initWithUTF8String: fileName];
-	return self;
+  return [self initWithClangSourceLocation: sourceLocation isMacro: NO];
 }
+
+- (id)initWithClangSourceLocation: (CXSourceLocation)sourceLocation isMacro: (bool)isMacro
+{
+  SUPERINIT;
+  CXFile f;
+  CXString fileName;
+  unsigned o;
+
+  if(!isMacro)
+  {
+    clang_getExpansionLocation(sourceLocation, &f, 0, 0, &o);
+    offset = o;
+    fileName = clang_getFileName(f);
+  }
+  else
+  {
+    clang_getPresumedLocation(sourceLocation, &fileName, &o, 0);
+    offset = o;
+  }
+
+  SCOPED_STR(fn, fileName);
+  file = [NSString stringWithUTF8String: fn];
+
+  return self;
+}
+
 - (NSString*)description
 {
 	return [NSString stringWithFormat: @"%@:%d", file, (int)offset];
@@ -204,7 +223,7 @@ NSArray *GNUstepIncludeDirectories()
 
 @implementation SCKClangSourceFile
 
-@synthesize functions, enumerations, enumerationValues, macros;
+@synthesize functions, enumerations, enumerationValues, macros, variables;
 
 /*
 static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
@@ -340,7 +359,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[m setTypeEncoding: typeEncoding];
 		[m setIsClassMethod: isClassMethod];
 		[m setParent: cls];
-		
+
 		[[cat methods] setObject: m forKey: methodName];
 		[[cls methods] setObject: m forKey: methodName];
 	}
@@ -358,12 +377,12 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 - (SCKFunction*)functionForName: (NSString*)aName
 {
 	SCKFunction *function = [functions objectForKey: aName];
-	
+
 	if (nil != function)
 	{
 		return function;
 	}
-	
+
 	function = [SCKFunction new];
 	[function setName: aName];
 	[functions setObject: function forKey: aName];
@@ -400,13 +419,32 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	//NSLog(@"Found %@ function %@ (%@) %@ at %@", (isStatic ? @"static" : @"global"), [function name], [function typeEncoding], (isDefinition ? @"defined" : @"declared"), l);
 }
 
+- (SCKGlobal *)globalForName: (NSString *)globalName
+{
+	SCKGlobal *variable = [variables objectForKey: globalName];
+
+	if (nil != variable)
+	{
+		return variable;
+	}
+
+	variable = [SCKGlobal new];
+	[variable setName: globalName];
+	[variables setObject: variable forKey: globalName];
+
+	return variable;
+}
+
+
 - (void)setLocation: (SCKSourceLocation*)l
         forVariable: (NSString*)name
    withTypeEncoding: (NSString*)type
+		   isStatic: (BOOL)isStatic
        isDefinition: (BOOL)isDefinition
 {
-	SCKGlobal *variable = [[self collection] globalForName: name];
-
+	id owner = (isStatic ? self : [self collection]);
+	SCKGlobal *variable = [owner globalForName: name];
+	
 	[variable setTypeEncoding: type];
 
 	if (isDefinition)
@@ -440,7 +478,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		property = [SCKProperty new];
 		[property setName: propertyName];
 		[property setParent: class];
-		
+
 		[[class properties] addObject: property];
 	}
 
@@ -454,13 +492,20 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
            forMacro: (NSString*)macroName
 {
 	SCKMacro *macro = [macros objectForKey: macroName];
+  BOOL isIncludedMacro = (![[sourceLocation file] isEqualToString: [self fileName]]);
+
+  if(isIncludedMacro)
+  {
+    return;
+  }
+
 	if (nil == macro)
 	{
 		macro = [SCKMacro new];
 		[macro setName: macroName];
 		[macros setObject: macro forKey: macroName];
 	}
-    
+
 	[macro setDefinition: sourceLocation];
 	[macro setDeclaration: sourceLocation];
 }
@@ -481,10 +526,10 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[ivar setTypeEncoding: typeEncoding];
 		[ivar setIsIBOutlet: isIBOutlet];
 		[ivar setParent: class];
-		
+
 		[[class ivars] addObject: ivar];
 	}
-	
+
 	[ivar setDeclaration: sourceLocation];
 }
 
@@ -512,7 +557,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 {
 	SCKProtocol *protocol = [[self collection] protocolForName: protocolName];
 	SCKMethod *method = nil;
-	
+
 	if (isRequired)
 	{
 		method = [[protocol requiredMethods] objectForKey: methodName];
@@ -521,7 +566,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	{
 		method = [[protocol optionalMethods] objectForKey: methodName];
 	}
-	
+
 	if (nil == method)
 	{
 		method = [SCKMethod new];
@@ -529,7 +574,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[method setTypeEncoding: typeEncoding];
 		[method setIsClassMethod: isClassMethod];
 		[method setParent: protocol];
-		
+
 		if (isRequired)
 		{
 			[[protocol requiredMethods] setObject: method forKey: methodName];
@@ -539,7 +584,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 			[[protocol optionalMethods] setObject: method forKey: methodName];
 		}
 	}
-	
+
 	if (isDefinition)
 	{
 		[method setDefinition: sourceLocation];
@@ -560,7 +605,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 {
 	SCKProtocol *protocol = [[self collection] protocolForName: protocolName];
 	SCKProperty *property = nil;
-	
+
 	if (isRequired)
 	{
 		property = [protocol requiredPropertyForName: propertyName];
@@ -576,7 +621,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[property setName: propertyName];
 		[property setTypeEncoding: typeEncoding];
 		[property setParent: protocol];
-		
+
 		if (isRequired)
 		{
 			[[protocol requiredProperties] addObject: property];
@@ -586,7 +631,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 			[[protocol optionalProperties] addObject: property];
 		}
 	}
-	
+
 	[property setDeclaration: sourceLocation];
 }
 
@@ -599,27 +644,27 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
            category: (NSString*)categoryName
 {
 	SCKClass *class = [[self collection] classForName: className];
-	SCKCategory *category = nil; 
-	
+	SCKCategory *category = nil;
+
 	if (nil != categoryName)
 	{
 		category = [[class categories] objectForKey: categoryName];
 		ETAssert(category != nil);
 	}
-	
+
 	SCKProperty *property = [category propertyForName: propertyName];
-	
+
 	if (nil == property)
 	{
 		property = [SCKProperty new];
 		[property setName: propertyName];
 		[property setTypeEncoding: typeEncoding];
 		[property setParent: class];
-		
+
 		[[category properties] addObject: property];
 		[[class properties] addObject: property];
 	}
-	
+
 	// @dynamic is assumed definition
 	if (isDefinition)
 	{
@@ -678,7 +723,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 								SCOPED_STR(typeEncoding, clang_getDeclObjCTypeEncoding(classCursor));
 								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
 									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
-									
+
 								[self setLocation: sourceLocation
 								          forIvar: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: typeEncoding]
@@ -712,7 +757,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 								SCOPED_STR(type, clang_getDeclObjCTypeEncoding(classCursor));
 								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
 									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
-								
+
 								[self setLocation: sourceLocation
 								        forMethod: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: type]
@@ -727,10 +772,10 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 						}
 						return CXChildVisit_Continue;
 					});
-					
-					/* We must visit the class cursor children to know whether 
-					   CXCursor_ObjCInterfaceDecl refers to a @interface or 
-					   @class declaration, and also to get the superclass and 
+
+					/* We must visit the class cursor children to know whether
+					   CXCursor_ObjCInterfaceDecl refers to a @interface or
+					   @class declaration, and also to get the superclass and
 					   protocol references. */
 					[self setLocation: classLoc
 					         forClass: [NSString stringWithUTF8String: className]
@@ -750,7 +795,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					   withSuperclass: nil
 					     isDefinition: clang_isCursorDefinition(cursor)
 						 isForwardDeclaration: NO];
-					
+
 					clang_visitChildrenWithBlock(cursor,
 						^ enum CXChildVisitResult (CXCursor classCursor, CXCursor parent)
 					{
@@ -810,7 +855,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 						    		     isDefinition: clang_isCursorDefinition(cursor)
 								          inClass: className
 							  	         category: [NSString stringWithUTF8String: categoryName]];
-								
+
 								break;
 							}
 							case CXCursor_ObjCDynamicDecl:
@@ -853,7 +898,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					[self setLocation: sourceLocation
 					      forProtocol: [NSString stringWithUTF8String: protocolName]
 						isForwardDeclaration: (clang_isCursorDefinition(cursor) == NO)];
-					
+
 					clang_visitChildrenWithBlock(cursor,
 						^enum CXChildVisitResult(CXCursor protocolCursor, CXCursor parent)
 					{
@@ -862,7 +907,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 						SCKSourceLocation *location = [[SCKSourceLocation alloc]
 							initWithClangSourceLocation: clang_getCursorLocation(protocolCursor)];
 						BOOL isRequired = YES;
-								
+
 						switch (protocolCursor.kind)
 						{
 							case CXCursor_ObjCPropertyDecl:
@@ -899,7 +944,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 									   isRequired: isRequired
 								     isDefinition: clang_isCursorDefinition(protocolCursor)
 								       inProtocol: [NSString stringWithUTF8String: protocolName]];
-										
+
 								break;
 							}
 							default:
@@ -936,19 +981,35 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					enum CXLinkageKind linkage = clang_getCursorLinkage(cursor);
 					ETAssert(linkage != CXLinkage_NoLinkage);
 
-					// TODO: Parse static variables
-					if (linkage != CXLinkage_Internal && linkage != CXLinkage_Invalid)
-					{
-						SCOPED_STR(name, clang_getCursorSpelling(cursor));
-						SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
-						STACK_SCOPED SCKSourceLocation *l = [[SCKSourceLocation alloc]
-							initWithClangSourceLocation: clang_getCursorLocation(cursor)];
-
-						[self setLocation: l
-						      forVariable: [NSString stringWithUTF8String: name]
-						 withTypeEncoding: [NSString stringWithUTF8String: type]
-						     isDefinition: clang_isCursorDefinition(cursor)];
+					SCOPED_STR(name, clang_getCursorSpelling(cursor));
+					SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
+					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+					BOOL isStatic = linkage == CXLinkage_Internal ? YES : NO;
+					
+					switch (linkage)
+ 					{
+						case CXLinkage_External:
+						{
+							[self setLocation: sourceLocation
+								  forVariable: [NSString stringWithUTF8String: name]
+							 withTypeEncoding: [NSString stringWithUTF8String: type]
+									 isStatic: isStatic
+								 isDefinition: clang_isCursorDefinition(cursor)];		
+				
+							break;
+						}
+						case CXLinkage_Internal:
+						{
+							[self setLocation: sourceLocation
+								  forVariable: [NSString stringWithUTF8String: name]
+							 withTypeEncoding: [NSString stringWithUTF8String: type]
+									 isStatic: isStatic
+								 isDefinition: clang_isCursorDefinition(cursor)];
+							
+							break;
+						}
 					}
+					
 					break;
 				}
 				case CXCursor_MacroDefinition:
@@ -956,7 +1017,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					SCOPED_STR(macroName, clang_getCursorSpelling(cursor));
 
 					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
-						initWithClangSourceLocation:clang_getCursorLocation(cursor)];
+						initWithClangSourceLocation:clang_getCursorLocation(cursor) isMacro: YES];
 
 					[self setLocation: sourceLocation
 					         forMacro: [NSString stringWithUTF8String: macroName]];
@@ -1044,6 +1105,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	macros = [NSMutableDictionary new];
 	enumerations = [NSMutableDictionary new];
 	enumerationValues = [NSMutableDictionary new];
+	variables = [NSMutableDictionary new];
 	return self;
 }
 - (void)addIncludePath: (NSString*)includePath
@@ -1055,7 +1117,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	{
 		clang_disposeTranslationUnit(translationUnit);
 		translationUnit = NULL;
-		[self reparse];
+		[self reparseWithOption: SCKParsingOptionNone];
 	}
 }
 
@@ -1067,7 +1129,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	}
 }
 
-- (void)reparse
+- (void)reparseWithOption: (short)parsingOption
 {
 	//NSLog(@" ---> Parsing %@", [fileName lastPathComponent]);
 
@@ -1098,8 +1160,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		translationUnit =
 			//clang_createTranslationUnitFromSourceFile(idx.clangIndex, fn, argc, argv, 0, unsaved);
 			clang_parseTranslationUnit(idx.clangIndex, mainFile, argv, argc, unsaved,
-					unsavedCount,
-					clang_defaultEditingTranslationUnitOptions());
+					unsavedCount, parsingOption);
 					//CXTranslationUnit_Incomplete);
 		file = clang_getFile(translationUnit, fn);
 	}
@@ -1107,7 +1168,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	{
 		clock_t c1 = clock();
 		//NSLog(@"Reparsing translation unit");
-		if (0 != clang_reparseTranslationUnit(translationUnit, unsavedCount, unsaved, clang_defaultReparseOptions(translationUnit)))
+		if (0 != clang_reparseTranslationUnit(translationUnit, unsavedCount, unsaved, parsingOption))
 		{
 			clang_disposeTranslationUnit(translationUnit);
 			translationUnit = 0;
@@ -1240,7 +1301,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 			// NSLog(@"%d ranges for diagnostic", rangeCount);
 			if (rangeCount == 0) {
 				//FIXME: probably somewhat redundant
-				SCKSourceLocation* sloc = [[SCKSourceLocation alloc] 
+				SCKSourceLocation* sloc = [[SCKSourceLocation alloc]
 					 initWithClangSourceLocation: loc];
 				NSDictionary *attr = D([NSNumber numberWithInt: (int)s], kSCKDiagnosticSeverity,
 					 [NSString stringWithUTF8String: clang_getCString(str)], kSCKDiagnosticText);
@@ -1285,7 +1346,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 
 	CXCodeCompleteResults *cr = clang_codeCompleteAt(translationUnit, [fileName UTF8String], line, column, &unsavedFile, 1, options);
 	clock_t c2 = clock();
-	NSLog(@"Complete time: %f\n", 
+	NSLog(@"Complete time: %f\n",
 	((double)c2 - (double)c1) / (double)CLOCKS_PER_SEC);
 	for (unsigned i=0 ; i<clang_codeCompleteGetNumDiagnostics(cr) ; i++)
 	{
@@ -1325,7 +1386,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					clang_disposeString(str);
 					break;
 				}
-				case CXCompletionChunk_Placeholder: 
+				case CXCompletionChunk_Placeholder:
 				{
 					CXString str = clang_getCompletionChunkText(cs, j);
 					[s appendFormat: @"<# %s #>", clang_getCString(str)];
@@ -1342,7 +1403,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 				case CXCompletionChunk_CurrentParameter:
 				case CXCompletionChunk_LeftParen:
 					[s appendString: @"("]; break;
-				case CXCompletionChunk_RightParen: 
+				case CXCompletionChunk_RightParen:
 					[s appendString: @"("]; break;
 				case CXCompletionChunk_LeftBracket:
 					[s appendString: @"["]; break;
@@ -1350,7 +1411,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					[s appendString: @"]"]; break;
 				case CXCompletionChunk_LeftBrace:
 					[s appendString: @"{"]; break;
-				case CXCompletionChunk_RightBrace: 
+				case CXCompletionChunk_RightBrace:
 					[s appendString: @"}"]; break;
 				case CXCompletionChunk_LeftAngle:
 					[s appendString: @"<"]; break;
@@ -1358,7 +1419,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					[s appendString: @">"]; break;
 				case CXCompletionChunk_Comma:
 					[s appendString: @","]; break;
-				case CXCompletionChunk_ResultType: 
+				case CXCompletionChunk_ResultType:
 					break;
 				case CXCompletionChunk_Colon:
 					[s appendString: @":"]; break;
@@ -1366,7 +1427,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					[s appendString: @";"]; break;
 				case CXCompletionChunk_Equal:
 					[s appendString: @"="]; break;
-				case CXCompletionChunk_HorizontalSpace: 
+				case CXCompletionChunk_HorizontalSpace:
 					[s appendString: @" "]; break;
 				case CXCompletionChunk_VerticalSpace:
 					[s appendString: @"\n"]; break;
@@ -1379,4 +1440,3 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	return result;
 }
 @end
-

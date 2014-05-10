@@ -23,11 +23,13 @@
 	NSMutableDictionary *enumerations;
 	NSMutableDictionary *enumerationValues;
 	NSMutableDictionary *macros;
+	NSMutableDictionary *variables;
 }
 
 @property (nonatomic, readonly) NSDictionary *functions;
 @property (nonatomic, readonly) NSDictionary *enumerations;
 @property (nonatomic, readonly) NSDictionary *enumerationValues;
 @property (nonatomic, readonly) NSDictionary *macros;
+@property (nonatomic, readonly) NSDictionary *variables;
 
 @end
