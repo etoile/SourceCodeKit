@@ -1,8 +1,6 @@
 SourceCodeKit TODO
 ==================
 
-- Static variable parsing
-
 - Adopted protocol parsing (for classes, categories and protocols)
 
 - Documentation extraction

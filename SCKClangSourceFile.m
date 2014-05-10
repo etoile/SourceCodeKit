@@ -223,7 +223,7 @@ NSArray *GNUstepIncludeDirectories()
 
 @implementation SCKClangSourceFile
 
-@synthesize functions, enumerations, enumerationValues, macros;
+@synthesize functions, enumerations, enumerationValues, macros, variables;
 
 /*
 static enum CXChildVisitResult findClass(CXCursor cursor, CXCursor parent, CXClientData client_data)
@@ -419,13 +419,32 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	//NSLog(@"Found %@ function %@ (%@) %@ at %@", (isStatic ? @"static" : @"global"), [function name], [function typeEncoding], (isDefinition ? @"defined" : @"declared"), l);
 }
 
+- (SCKGlobal *)globalForName: (NSString *)globalName
+{
+	SCKGlobal *variable = [variables objectForKey: globalName];
+
+	if (nil != variable)
+	{
+		return variable;
+	}
+
+	variable = [SCKGlobal new];
+	[variable setName: globalName];
+	[variables setObject: variable forKey: globalName];
+
+	return variable;
+}
+
+
 - (void)setLocation: (SCKSourceLocation*)l
         forVariable: (NSString*)name
    withTypeEncoding: (NSString*)type
+		   isStatic: (BOOL)isStatic
        isDefinition: (BOOL)isDefinition
 {
-	SCKGlobal *variable = [[self collection] globalForName: name];
-
+	id owner = (isStatic ? self : [self collection]);
+	SCKGlobal *variable = [owner globalForName: name];
+	
 	[variable setTypeEncoding: type];
 
 	if (isDefinition)
@@ -962,19 +981,35 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					enum CXLinkageKind linkage = clang_getCursorLinkage(cursor);
 					ETAssert(linkage != CXLinkage_NoLinkage);
 
-					// TODO: Parse static variables
-					if (linkage != CXLinkage_Internal && linkage != CXLinkage_Invalid)
-					{
-						SCOPED_STR(name, clang_getCursorSpelling(cursor));
-						SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
-						STACK_SCOPED SCKSourceLocation *l = [[SCKSourceLocation alloc]
-							initWithClangSourceLocation: clang_getCursorLocation(cursor)];
-
-						[self setLocation: l
-						      forVariable: [NSString stringWithUTF8String: name]
-						 withTypeEncoding: [NSString stringWithUTF8String: type]
-						     isDefinition: clang_isCursorDefinition(cursor)];
+					SCOPED_STR(name, clang_getCursorSpelling(cursor));
+					SCOPED_STR(type, clang_getDeclObjCTypeEncoding(cursor));
+					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc] initWithClangSourceLocation: clang_getCursorLocation(cursor)];
+					BOOL isStatic = linkage == CXLinkage_Internal ? YES : NO;
+					
+					switch (linkage)
+ 					{
+						case CXLinkage_External:
+						{
+							[self setLocation: sourceLocation
+								  forVariable: [NSString stringWithUTF8String: name]
+							 withTypeEncoding: [NSString stringWithUTF8String: type]
+									 isStatic: isStatic
+								 isDefinition: clang_isCursorDefinition(cursor)];		
+				
+							break;
+						}
+						case CXLinkage_Internal:
+						{
+							[self setLocation: sourceLocation
+								  forVariable: [NSString stringWithUTF8String: name]
+							 withTypeEncoding: [NSString stringWithUTF8String: type]
+									 isStatic: isStatic
+								 isDefinition: clang_isCursorDefinition(cursor)];
+							
+							break;
+						}
 					}
+					
 					break;
 				}
 				case CXCursor_MacroDefinition:
@@ -1070,6 +1105,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	macros = [NSMutableDictionary new];
 	enumerations = [NSMutableDictionary new];
 	enumerationValues = [NSMutableDictionary new];
+	variables = [NSMutableDictionary new];
 	return self;
 }
 - (void)addIncludePath: (NSString*)includePath
