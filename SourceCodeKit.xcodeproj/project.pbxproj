@@ -37,8 +37,8 @@
 		609CFE6C16FFD83100D01AAB /* EtoileFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE5116FFD81300D01AAB /* EtoileFoundation.framework */; };
 		609CFE7016FFDE7F00D01AAB /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE6F16FFDE7F00D01AAB /* libclang.dylib */; };
 		60C4F4A3173AA84800AA10F8 /* EtoileFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 609CFE5116FFD81300D01AAB /* EtoileFoundation.framework */; };
-		FA0D349D1920C9B6000A3248 /* SCKClassTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0D349B1920C9B6000A3248 /* SCKClassTracker.h */; };
-		FA0D349E1920C9B6000A3248 /* SCKClassTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = FA0D349C1920C9B6000A3248 /* SCKClassTracker.m */; };
+		FA0D34AC19211CD5000A3248 /* SCKClassTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0D34AB19211CD5000A3248 /* SCKClassTracker.h */; };
+		FA0D34AE19211CE0000A3248 /* SCKClassTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = FA0D34AD19211CE0000A3248 /* SCKClassTracker.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -199,8 +199,8 @@
 		609CFE6F16FFDE7F00D01AAB /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib; sourceTree = DEVELOPER_DIR; };
 		609CFEDC17006ADD00D01AAB /* INSTALL */ = {isa = PBXFileReference; lastKnownFileType = text; path = INSTALL; sourceTree = "<group>"; };
 		609CFEDD17006ADE00D01AAB /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		FA0D349B1920C9B6000A3248 /* SCKClassTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKClassTracker.h; sourceTree = "<group>"; };
-		FA0D349C1920C9B6000A3248 /* SCKClassTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKClassTracker.m; sourceTree = "<group>"; };
+		FA0D34AB19211CD5000A3248 /* SCKClassTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKClassTracker.h; sourceTree = "<group>"; };
+		FA0D34AD19211CE0000A3248 /* SCKClassTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKClassTracker.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -260,8 +260,8 @@
 		609CFDA916FFD31700D01AAB = {
 			isa = PBXGroup;
 			children = (
-				FA0D349B1920C9B6000A3248 /* SCKClassTracker.h */,
-				FA0D349C1920C9B6000A3248 /* SCKClassTracker.m */,
+				FA0D34AD19211CE0000A3248 /* SCKClassTracker.m */,
+				FA0D34AB19211CD5000A3248 /* SCKClassTracker.h */,
 				609CFEDD17006ADE00D01AAB /* README */,
 				609CFEDC17006ADD00D01AAB /* INSTALL */,
 				609CFDD116FFD38D00D01AAB /* SCKClangSourceFile.h */,
@@ -353,7 +353,7 @@
 				609CFDE616FFD38D00D01AAB /* SCKIntrospection.h in Headers */,
 				609CFDEA16FFD38D00D01AAB /* SCKSourceCollection.h in Headers */,
 				609CFDEC16FFD38D00D01AAB /* SCKSourceFile.h in Headers */,
-				FA0D349D1920C9B6000A3248 /* SCKClassTracker.h in Headers */,
+				FA0D34AC19211CD5000A3248 /* SCKClassTracker.h in Headers */,
 				609CFDEE16FFD38D00D01AAB /* SCKSyntaxHighlighter.h in Headers */,
 				609CFDF016FFD38D00D01AAB /* SCKTextTypes.h in Headers */,
 				609CFDF216FFD38D00D01AAB /* SourceCodeKit.h in Headers */,
@@ -572,7 +572,7 @@
 				609CFDED16FFD38D00D01AAB /* SCKSourceFile.m in Sources */,
 				609CFDEF16FFD38D00D01AAB /* SCKSyntaxHighlighter.m in Sources */,
 				609CFDF116FFD38D00D01AAB /* SCKTextTypes.m in Sources */,
-				FA0D349E1920C9B6000A3248 /* SCKClassTracker.m in Sources */,
+				FA0D34AE19211CE0000A3248 /* SCKClassTracker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
