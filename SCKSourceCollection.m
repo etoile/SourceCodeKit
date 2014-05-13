@@ -25,7 +25,7 @@ static NSDictionary *fileClasses;
 	NSMutableDictionary *enumerationValues;
 }
 
-@synthesize files, bundles, classes, protocols, globals, functions, enumerations, enumerationValues;
+@synthesize files, bundles, classes, protocols, globals, functions, parsingOption, enumerations, enumerationValues;
 
 + (void)initialize
 {
@@ -40,7 +40,7 @@ static NSDictionary *fileClasses;
 - (NSMutableDictionary *)newIndexes
 {
 	NSMutableDictionary *newIndexes = [NSMutableDictionary new];
-	
+
 	// A single clang index instance for all of the clang-supported file types
 	id index = [SCKClangIndex new];
 	[newIndexes setObject: index forKey: @"h"];
@@ -69,7 +69,7 @@ static NSDictionary *fileClasses;
 - (id)init
 {
 	SUPERINIT
-	
+
 	[self clear];
 
 	int count = objc_getClassList(NULL, 0);
@@ -100,7 +100,7 @@ static NSDictionary *fileClasses;
 - (SCKClass*)classForName: (NSString*)aName
 {
 	SCKClass *class = [classes objectForKey: aName];
-	
+
 	if (nil != class)
 	{
 		return class;
@@ -109,7 +109,7 @@ static NSDictionary *fileClasses;
 	class = [SCKClass new];
 	[class setName: aName];
 	[classes setObject: class forKey: aName];
-	
+
 	return class;
 }
 
@@ -121,7 +121,7 @@ static NSDictionary *fileClasses;
 	{
 		return protocol;
 	}
-	
+
 	protocol = [SCKProtocol new];
 	[protocol setName: aName];
 	[protocols setObject: protocol forKey: aName];
@@ -131,12 +131,12 @@ static NSDictionary *fileClasses;
 - (SCKFunction*)functionForName: (NSString*)aName
 {
 	SCKFunction *function = [functions objectForKey: aName];
-	
+
 	if (nil != function)
 	{
 		return function;
 	}
-	
+
 	function = [SCKFunction new];
 	[function setName: aName];
 	[functions setObject: function forKey: aName];
@@ -146,19 +146,19 @@ static NSDictionary *fileClasses;
 - (SCKGlobal*)globalForName: (NSString*)aName
 {
 	SCKGlobal *global = [globals objectForKey: aName];
-	
+
 	if (nil != global)
 	{
 		return global;
 	}
-	
+
 	global = [SCKGlobal new];
 	[global setName: aName];
 	[globals setObject: global forKey: aName];
 	return global;
 }
 
-- (void)addEnumeration: (SCKEnumeration *)anEnum 
+- (void)addEnumeration: (SCKEnumeration *)anEnum
 {
 	[enumerations setObject: anEnum forKey: [anEnum name]];
 }
@@ -186,7 +186,7 @@ static NSDictionary *fileClasses;
 	file = [[fileClasses objectForKey: extension] fileUsingIndex: [indexes objectForKey: extension]];
 	file.fileName = path;
 	file.collection = self;
-	[file reparse];
+	[file reparseWithOption: parsingOption];
 	if (nil != file)
 	{
 		[files setObject: file forKey: path];
