@@ -7,8 +7,8 @@
 typedef enum SCKParsingOption
 {
   SCKParsingOptionNone = 0x0,
-  SCKDetailedPreprocessingRecord = 0x01;
-}SCKParsingOption;
+  SCKDetailedPreprocessingRecord = 0x01
+} SCKParsingOption;
 
 /**
  * A source collection encapsulates a group of (potentially cross-referenced)

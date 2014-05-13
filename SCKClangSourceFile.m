@@ -40,32 +40,32 @@ static void freestring(CXString *str)
 
 - (id)initWithClangSourceLocation: (CXSourceLocation)sourceLocation
 {
-  return [self initWithClangSourceLocation: sourceLocation isMacro: NO];
+	return [self initWithClangSourceLocation: sourceLocation isMacro: NO];
 }
 
 - (id)initWithClangSourceLocation: (CXSourceLocation)sourceLocation isMacro: (bool)isMacro
 {
-  SUPERINIT;
-  CXFile f;
-  CXString fileName;
-  unsigned o;
+	SUPERINIT;
+	CXFile f;
+	CXString fileName;
+	unsigned _offset;
 
-  if(!isMacro)
-  {
-    clang_getExpansionLocation(sourceLocation, &f, 0, 0, &o);
-    offset = o;
-    fileName = clang_getFileName(f);
-  }
-  else
-  {
-    clang_getPresumedLocation(sourceLocation, &fileName, &o, 0);
-    offset = o;
-  }
+	if (!isMacro)
+  	{
+		clang_getExpansionLocation(sourceLocation, &f, 0, 0, &_offset);
+		offset = _offset;
+		fileName = clang_getFileName(f);
+  	}
+  	else
+  	{	
+		clang_getPresumedLocation(sourceLocation, &fileName, &_offset, 0);
+		offset = _offset;
+  	}
 
-  SCOPED_STR(fn, fileName);
-  file = [NSString stringWithUTF8String: fn];
+  	SCOPED_STR(fn, fileName);
+  	file = [NSString stringWithUTF8String: fn];
 
-  return self;
+  	return self;
 }
 
 - (NSString*)description
@@ -473,12 +473,12 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
            forMacro: (NSString*)macroName
 {
 	SCKMacro *macro = [macros objectForKey: macroName];
-  BOOL isIncludedMacro = (![[sourceLocation file] isEqualToString: [self fileName]]);
+  	BOOL isIncludedMacro = (![[sourceLocation file] isEqualToString: fileName]);
 
-  if(isIncludedMacro)
-  {
-    return;
-  }
+  	if (isIncludedMacro)
+  	{
+    		return;
+  	}
 
 	if (nil == macro)
 	{

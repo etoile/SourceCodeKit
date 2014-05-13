@@ -186,7 +186,7 @@ static NSDictionary *fileClasses;
 	file = [[fileClasses objectForKey: extension] fileUsingIndex: [indexes objectForKey: extension]];
 	file.fileName = path;
 	file.collection = self;
-	[file reparseWithOption: [self parsingOption]];
+	[file reparseWithOption: parsingOption];
 	if (nil != file)
 	{
 		[files setObject: file forKey: path];
