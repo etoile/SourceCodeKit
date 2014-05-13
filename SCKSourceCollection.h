@@ -6,8 +6,8 @@
 
 typedef enum SCKParsingOption
 {
-  SCKParsingOptionNone = 0x0,
-  SCKDetailedPreprocessingRecord = 0x01
+	SCKParsingOptionNone = 0x0,
+	SCKDetailedPreprocessingRecord = 0x01
 } SCKParsingOption;
 
 /**
