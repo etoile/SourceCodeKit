@@ -1016,7 +1016,8 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 							{
 								[enumerationValues setObject: v
 								                      forKey: vName];
-								[[self collection] addEnumerationValue: v];							}
+								[[self collection] addEnumerationValue: v];
+							}
 						}
 						return CXChildVisit_Continue;
 					});
