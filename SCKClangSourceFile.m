@@ -48,18 +48,15 @@ static void freestring(CXString *str)
 	SUPERINIT;
 	CXFile f;
 	CXString fileName;
-	unsigned _offset;
-
+	
 	if (!isMacro)
   	{
-		clang_getExpansionLocation(sourceLocation, &f, 0, 0, &_offset);
-		offset = _offset;
+		clang_getExpansionLocation(sourceLocation, &f, 0, 0, &offset);
 		fileName = clang_getFileName(f);
   	}
   	else
   	{	
-		clang_getPresumedLocation(sourceLocation, &fileName, &_offset, 0);
-		offset = _offset;
+		clang_getPresumedLocation(sourceLocation, &fileName, &offset, 0);
   	}
 
   	SCOPED_STR(fn, fileName);
