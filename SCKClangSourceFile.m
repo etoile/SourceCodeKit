@@ -1344,7 +1344,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 				case CXCompletionChunk_LeftParen:
 					[s appendString: @"("]; break;
 				case CXCompletionChunk_RightParen: 
-					[s appendString: @"("]; break;
+					[s appendString: @")"]; break;
 				case CXCompletionChunk_LeftBracket:
 					[s appendString: @"["]; break;
 				case CXCompletionChunk_RightBracket:
