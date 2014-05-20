@@ -78,7 +78,7 @@ static SCKSourceCollection *sourceCollection = nil;
 	SCKClass *classA = [self parsedClassForName: @"A"];
 	SCKClass *classB = [self parsedClassForName: @"B"];
 	NSMutableDictionary *adoptedProtocols = [classA adoptedProtocols];
-	NSSet *adoptedProtocolNames = S(@"Protocol1", @"Protocol3");
+	NSSet *adoptedProtocolNames = S(@"Protocol1", @"Protocol3", @"Protocol4", @"Protocol5");
 	SCKFunction *function2 = [[self parsedFunctionsForNames: A(@"function2")] firstObject];
 
 	UKNotNil(classA);
@@ -215,7 +215,7 @@ static SCKSourceCollection *sourceCollection = nil;
 	SCKClass *classB = [self parsedClassForName: @"B"];
 	NSMutableDictionary *categories = [classA categories];
 	NSMutableDictionary *adoptedProtocols = [[[categories allValues] objectAtIndex: 0] adoptedProtocols];
-	NSSet *adoptedProtocolNames = S(@"Protocol1", @"Protocol3");
+	NSSet *adoptedProtocolNames = S(@"Protocol4", @"Protocol5");
 	SCKCategory *aExtension = [categories objectForKey: @"AExtension"];
 	
 	UKNotNil(aExtension);
@@ -242,7 +242,7 @@ static SCKSourceCollection *sourceCollection = nil;
 	SCKCategory *aExtension = [categories objectForKey: @"AExtension"];
 	NSMutableDictionary *methods = [aExtension methods];
 	NSSet *methodNames = S(@"propertyInsideCategory",
-		@"setPropertyInsideCategory:", @"methodInCategory");
+		@"setPropertyInsideCategory:", @"methodInCategory", @"haveHotChocolate", @"haveMilkshake");
 
 	UKObjectsEqual(methodNames, SA([methods allKeys]));
 	UKObjectsEqual(SA([methods allKeys]), SA((id)[[[methods allValues] mappedCollection] name]));
@@ -298,7 +298,7 @@ static SCKSourceCollection *sourceCollection = nil;
 	NSMutableDictionary *methods = [classA methods];
 	NSSet *methodNames = S(@"text", @"setText:", @"wakeUpAtDate:",
 		@"sleepLater:", @"sleepNow", @"propertyInsideCategory",
-		@"setPropertyInsideCategory:", @"methodInCategory");
+		@"setPropertyInsideCategory:", @"methodInCategory", @"haveHotChocolate", @"haveMilkshake");
 
 	UKObjectsEqual(methodNames, SA([methods allKeys]));
 	UKObjectsEqual(SA([methods allKeys]), SA((id)[[[methods allValues] mappedCollection] name]));
