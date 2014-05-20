@@ -151,7 +151,7 @@
 	requiredMethods = [NSMutableDictionary new];
 	optionalProperties = [NSMutableArray new];
 	requiredProperties = [NSMutableArray new];
-	adoptedProtocols [NSMutableDictionary new];
+	adoptedProtocols = [NSMutableDictionary new];
 	return self;
 }
 
