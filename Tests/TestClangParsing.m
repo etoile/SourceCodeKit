@@ -17,6 +17,7 @@ static SCKSourceCollection *sourceCollection = nil;
 	if (parsed == NO)
 	{
 		sourceCollection = [SCKSourceCollection new];
+		[sourceCollection setIgnoresIncludedSymbols: YES];
 		[self parseSourceFilesIntoCollection: sourceCollection];
 	}
 	return self;

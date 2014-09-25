@@ -87,6 +87,15 @@
 - (void)addEnumerationValue: (SCKEnumerationValue *)anEnumValue;
 
 /**
+ * Indicates whether -sourceFileForPath: should ignore symbols from included 
+ * headers, or collect them as global symbols.
+ *
+ * If NO, methods such as -functionForName: return included symbols.
+ *
+ * By default, returns NO.
+ */
+@property (nonatomic, assign) BOOL ignoresIncludedSymbols;
+/**
  * Generates a new source file object corresponding to the specified on-disk
  * file.  The returned object is not guaranteed to be unique - subsequent calls
  * with the same argument will return the same object.

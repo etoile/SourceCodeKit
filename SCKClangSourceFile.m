@@ -378,7 +378,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 {
 	BOOL isIncludedFunction = (![[l file] isEqualToString: [self fileName]]);
 
-	if (isIncludedFunction)
+	if (isIncludedFunction && [[self collection] ignoresIncludedSymbols])
 	{
 		return;
 	}

@@ -23,9 +23,10 @@ static NSDictionary *fileClasses;
 	NSMutableDictionary *globals;
 	NSMutableDictionary *enumerations;
 	NSMutableDictionary *enumerationValues;
+	BOOL ignoresIncludedSymbols;
 }
 
-@synthesize files, bundles, classes, protocols, globals, functions, enumerations, enumerationValues;
+@synthesize files, bundles, classes, protocols, globals, functions, enumerations, enumerationValues, ignoresIncludedSymbols;
 
 + (void)initialize
 {
