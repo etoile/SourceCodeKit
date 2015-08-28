@@ -1,0 +1,6 @@
+Build/
+DerivedData
+
+xcuserdata/
+
+*.xccheckout
