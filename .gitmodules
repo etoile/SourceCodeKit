@@ -1,0 +1,3 @@
+[submodule "EtoileFoundation"]
+	path = EtoileFoundation
+	url = https://github.com/etoile/EtoileFoundation
