@@ -257,6 +257,7 @@ static BOOL isIBOutletFromPropertyOrIvar(CXCursor cursor)
 - (void) setLocation: (SCKSourceLocation*)aLocation
             forClass: (NSString*)aClassName
       withSuperclass: (NSString*)aSuperclassName
+	adoptedProtocols: (NSArray*)adoptedProtocolNames
         isDefinition: (BOOL)isDefinition
 isForwardDeclaration: (BOOL)isForwardDeclaration
 {
@@ -274,6 +275,13 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[class setSuperclass: [[self collection] classForName: aSuperclassName]];
 	}
 
+	if (nil != adoptedProtocolNames)
+	{
+		[self addAdoptedProtocolWithNames: adoptedProtocolNames
+					   toProgramComponent: class
+					   			category: nil];
+	}
+
 	if (isDefinition)
 	{
 		[class setDefinition: aLocation];
@@ -286,6 +294,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 
 - (void)setLocation: (SCKSourceLocation*)aLocation
         forCategory: (NSString*)aCategoryName
+   adoptedProtocols: (NSArray*)adoptedProtocolNames
        isDefinition: (BOOL)isDefinition
             ofClass: (NSString*)aClassName
 {
@@ -299,6 +308,13 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 		[category setParent: class];
 
 		[[class categories] setObject: category forKey: aCategoryName];
+	}
+
+	if (nil != adoptedProtocolNames)
+	{
+		[self addAdoptedProtocolWithNames: adoptedProtocolNames
+					   toProgramComponent: class
+					   			 category: category];
 	}
 
 	if (isDefinition)
@@ -490,6 +506,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 
 - (void) setLocation: (SCKSourceLocation*)sourceLocation
          forProtocol: (NSString*)protocolName
+	adoptedProtocols: (NSArray*)adoptedProtocolNames
 isForwardDeclaration: (BOOL)isForwardDeclaration
 {
 	SCKProtocol *protocol = [[self collection] protocolForName: protocolName];
@@ -498,6 +515,14 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	{
 		return;
 	}
+
+	if (nil != adoptedProtocolNames)
+	{
+		[self addAdoptedProtocolWithNames: adoptedProtocolNames
+					   toProgramComponent: nil
+					   			 category: nil];
+	}
+
 	[protocol setDeclaration: sourceLocation];
 	[protocol setDefinition: sourceLocation];
 }
@@ -631,6 +656,61 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 	}
 }
 
+- (void)addAdoptedProtocolWithName: (NSString*)adoptedProtocolName
+						   toClass: (SCKClass*)class
+						toProtocol: (SCKProtocol*)protocol
+						toCategory: (SCKCategory*)category
+{
+	SCKProtocol *adoptedProtocol = nil;
+	
+	if (nil != class)
+	{
+		adoptedProtocol = [[class adoptedProtocols] objectForKey: adoptedProtocolName];
+		
+		if (nil == adoptedProtocol)
+		{
+			adoptedProtocol = [[self collection] protocolForName: adoptedProtocolName];
+			[[class adoptedProtocols] setObject: adoptedProtocol forKey: adoptedProtocolName];
+		}
+		
+		if (nil != category)
+		{
+			[[category adoptedProtocols] setObject: adoptedProtocol forKey: adoptedProtocolName];
+		}
+	}
+	
+	if (nil != protocol)
+	{
+		adoptedProtocol = [[protocol adoptedProtocols] objectForKey: adoptedProtocolName];
+		
+		if (nil == adoptedProtocol)
+		{
+			adoptedProtocol = [[self collection] protocolForName: adoptedProtocolName];
+			[[protocol adoptedProtocols] setObject: adoptedProtocol forKey: adoptedProtocolName];
+		}
+	}
+}
+
+- (void)addAdoptedProtocolWithNames: (NSArray *)adoptedProtocolNames
+				 toProgramComponent: (SCKProgramComponent *)component
+						   category: (SCKCategory *)category
+{
+	if (nil == adoptedProtocolNames) 
+	{
+		return;
+	}
+	
+	for (NSString *adoptedProtocolName in adoptedProtocolNames) 
+	{
+		SCKProtocol *protocol = [[self collection] protocolForName: adoptedProtocolName];
+		
+		[[(id)component adoptedProtocols] setObject: protocol forKey: adoptedProtocolName];
+		
+		[[category adoptedProtocols] setObject: protocol forKey: adoptedProtocolName];
+	}
+}
+
+
 - (void)rebuildIndex
 {
 	if (0 == translationUnit) { return; }
@@ -655,10 +735,16 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					SCOPED_STR(className, clang_getCursorSpelling(cursor));
 					NSString __block *superclassName = nil;
 					BOOL __block isForwardDeclaration = NO;
-
+					NSMutableArray __block *adoptedProtocols = [NSMutableArray array];
+					
 					clang_visitChildrenWithBlock(cursor,
 						^ enum CXChildVisitResult (CXCursor classCursor, CXCursor parent)
 					{
+						SCOPED_STR(name, clang_getCursorSpelling(classCursor));
+						SCOPED_STR(typeEncoding, clang_getDeclObjCTypeEncoding(classCursor));
+						SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
+										initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
+
 						switch (classCursor.kind)
 						{
 							case CXCursor_ObjCClassRef:
@@ -672,13 +758,14 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 								superclassName = [NSString stringWithUTF8String: name];
 								break;
 							}
-							case CXCursor_ObjCIvarDecl:
+							case CXCursor_ObjCProtocolRef:
 							{
-								SCOPED_STR(name, clang_getCursorSpelling(classCursor));
-								SCOPED_STR(typeEncoding, clang_getDeclObjCTypeEncoding(classCursor));
-								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
-									
+								[adoptedProtocols addObject: [NSString stringWithUTF8String: name]];
+								
+								break;
+							}
+							case CXCursor_ObjCIvarDecl:
+							{	
 								[self setLocation: sourceLocation
 								          forIvar: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: typeEncoding]
@@ -688,10 +775,6 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 							}
 							case CXCursor_ObjCPropertyDecl:
 							{
-								SCOPED_STR(name, clang_getCursorSpelling(classCursor));
-								SCOPED_STR(type, clang_getDeclObjCTypeEncoding(classCursor));
-								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
 								CXObjCPropertyAttrKind attributes = 0;
 #if CINDEX_VERSION >= 21
 								attributes = clang_Cursor_getObjCPropertyAttributes(classCursor, 0);
@@ -699,7 +782,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 
 								[self setLocation: sourceLocation
 								      forProperty: [NSString stringWithUTF8String: name]
-								 withTypeEncoding: [NSString stringWithUTF8String: type]
+								 withTypeEncoding: [NSString stringWithUTF8String: typeEncoding]
 								       attributes: attributes
 								       isIBOutlet: isIBOutletFromPropertyOrIvar(classCursor)
 								          inClass: [NSString stringWithUTF8String: className]];
@@ -707,15 +790,10 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 							}
 							case CXCursor_ObjCInstanceMethodDecl:
 							case CXCursor_ObjCClassMethodDecl:
-							{
-								SCOPED_STR(name, clang_getCursorSpelling(classCursor));
-								SCOPED_STR(type, clang_getDeclObjCTypeEncoding(classCursor));
-								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(classCursor)];
-								
+							{	
 								[self setLocation: sourceLocation
 								        forMethod: [NSString stringWithUTF8String: name]
-								 withTypeEncoding: [NSString stringWithUTF8String: type]
+								 withTypeEncoding: [NSString stringWithUTF8String: typeEncoding]
 								    isClassMethod: (classCursor.kind == CXCursor_ObjCClassMethodDecl)
 								     isDefinition: clang_isCursorDefinition(classCursor)
 								          inClass: [NSString stringWithUTF8String: className]
@@ -735,6 +813,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					[self setLocation: classLoc
 					         forClass: [NSString stringWithUTF8String: className]
 					   withSuperclass: superclassName
+					 adoptedProtocols: adoptedProtocols
 					     isDefinition: clang_isCursorDefinition(cursor)
 						isForwardDeclaration: isForwardDeclaration];
 					break;
@@ -748,6 +827,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					[self setLocation: classLoc
 					         forClass: [NSString stringWithUTF8String: className]
 					   withSuperclass: nil
+					 adoptedProtocols: nil
 					     isDefinition: clang_isCursorDefinition(cursor)
 						 isForwardDeclaration: NO];
 					
@@ -784,25 +864,27 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 						initWithClangSourceLocation: clang_getCursorLocation(cursor)];
 					SCOPED_STR(categoryName, clang_getCursorSpelling(cursor));
 					NSString *className = classNameFromCategory(cursor);
-
-					[self setLocation: categoryLoc
-					      forCategory: [NSString stringWithUTF8String: categoryName]
-					     isDefinition: clang_isCursorDefinition(cursor)
-					          ofClass: className];
+					NSMutableArray __block *adoptedProtocols = [NSMutableArray array];
 
 					clang_visitChildrenWithBlock(cursor,
 						^ enum CXChildVisitResult (CXCursor categoryCursor, CXCursor parent)
 					{
+						SCOPED_STR(name, clang_getCursorSpelling(categoryCursor));
+						SCOPED_STR(type, clang_getDeclObjCTypeEncoding(categoryCursor));
+						SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
+								initWithClangSourceLocation: clang_getCursorLocation(categoryCursor)];
+
 						switch (categoryCursor.kind)
 						{
+							case CXCursor_ObjCProtocolRef:
+							{
+								[adoptedProtocols addObject: [NSString stringWithUTF8String: name]];
+								
+								break;
+							}
 							case CXCursor_ObjCInstanceMethodDecl:
 							case CXCursor_ObjCClassMethodDecl:
 							{
-								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(categoryCursor)];
-								SCOPED_STR(name, clang_getCursorSpelling(categoryCursor));
-								SCOPED_STR(type, clang_getDeclObjCTypeEncoding(categoryCursor));
-
 								[self setLocation: sourceLocation
 								        forMethod: [NSString stringWithUTF8String: name]
 								 withTypeEncoding: [NSString stringWithUTF8String: type]
@@ -816,10 +898,6 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 							case CXCursor_ObjCDynamicDecl:
 							case CXCursor_ObjCPropertyDecl:
 							{
-								SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
-									initWithClangSourceLocation: clang_getCursorLocation(categoryCursor)];
-								SCOPED_STR(name, clang_getCursorSpelling(categoryCursor));
-								SCOPED_STR(type, clang_getDeclObjCTypeEncoding(categoryCursor));
 								CXObjCPropertyAttrKind attributes = 0;
 #if CINDEX_VERSION >= 21
 								attributes = clang_Cursor_getObjCPropertyAttributes(categoryCursor, 0);
@@ -839,6 +917,12 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
  						}
 						return CXChildVisit_Continue;
 					});
+					
+					[self setLocation: categoryLoc
+					      forCategory: [NSString stringWithUTF8String: categoryName]
+					 adoptedProtocols: adoptedProtocols
+					     isDefinition: clang_isCursorDefinition(cursor)
+					          ofClass: className];
 					break;
 				}
 				case CXCursor_ObjCProtocolDecl:
@@ -847,12 +931,7 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 					SCOPED_STR(protocolName, clang_getCursorSpelling(cursor));
 					SCKSourceLocation *sourceLocation = [[SCKSourceLocation alloc]
 							initWithClangSourceLocation: clang_getCursorLocation(cursor)];
-
-					// NOTE: We could use CXCursor_ObjCProtocolDecl to parse protocol
-					// forward declarations as we do with CXCursor_ObjCClassDecl
-					[self setLocation: sourceLocation
-					      forProtocol: [NSString stringWithUTF8String: protocolName]
-						isForwardDeclaration: (clang_isCursorDefinition(cursor) == NO)];
+					NSMutableArray __block *adoptedProtocols = [NSMutableArray array];
 					
 					clang_visitChildrenWithBlock(cursor,
 						^enum CXChildVisitResult(CXCursor protocolCursor, CXCursor parent)
@@ -865,6 +944,12 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 								
 						switch (protocolCursor.kind)
 						{
+							case CXCursor_ObjCProtocolRef:
+							{
+								[adoptedProtocols addObject: [NSString stringWithUTF8String: name]];
+								
+								break;
+							}
 							case CXCursor_ObjCPropertyDecl:
 							{
 								CXObjCPropertyAttrKind attributes = 0;
@@ -907,6 +992,12 @@ isForwardDeclaration: (BOOL)isForwardDeclaration
 						}
 						return CXChildVisit_Recurse;
 					});
+					// NOTE: We could use CXCursor_ObjCProtocolDecl to parse protocol
+					// forward declarations as we do with CXCursor_ObjCClassDecl
+					[self setLocation: sourceLocation
+					      forProtocol: [NSString stringWithUTF8String: protocolName]
+					 adoptedProtocols: adoptedProtocols
+				 isForwardDeclaration: (clang_isCursorDefinition(cursor) == NO)];
 					break;
 				}
 				case CXCursor_FunctionDecl:

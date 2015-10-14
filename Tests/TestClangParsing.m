@@ -78,13 +78,19 @@ static SCKSourceCollection *sourceCollection = nil;
 {
 	SCKClass *classA = [self parsedClassForName: @"A"];
 	SCKClass *classB = [self parsedClassForName: @"B"];
+	NSMutableDictionary *adoptedProtocols = [classA adoptedProtocols];
+	NSSet *adoptedProtocolNames = S(@"Protocol1", @"Protocol3", @"Protocol4", @"Protocol5");
 	SCKFunction *function2 = [[self parsedFunctionsForNames: A(@"function2")] firstObject];
 
 	UKNotNil(classA);
 	UKStringsEqual(@"A", [classA name]);
 	UKStringsEqual(@"NSObject", [[classA superclass] name]);
 	UKObjectsEqual([[classB superclass] name], [classA name]);
-
+	
+	// Adopted protocol related tests
+	UKObjectsEqual(adoptedProtocolNames, SA([adoptedProtocols allKeys]));
+	UKObjectsEqual(SA([adoptedProtocols allKeys]), SA((id)[[[adoptedProtocols allValues] mappedCollection] name]));
+	
 	// FIXME:UKStringsEqual(@"Dummy Class Description", [[class documentation] string]);
 	
 	UKStringsEqual(@"AB.h", [[[classA declaration] file] lastPathComponent]);
@@ -101,11 +107,18 @@ static SCKSourceCollection *sourceCollection = nil;
 	SCKProtocol *protocol1 = [self parsedProtocolForName: @"Protocol1"];
 	SCKProtocol *protocol2 = [self parsedProtocolForName: @"Protocol2"];
 	SCKProtocol *protocol3 = [self parsedProtocolForName: @"Protocol3"];
+	NSMutableDictionary *adoptedProtocols = [protocol3 adoptedProtocols];
+	NSSet *adoptedProtocolNames = S(@"Protocol1");
 	SCKFunction *function2 = [[self parsedFunctionsForNames: A(@"function2")] firstObject];
 	
 	UKNotNil(protocol1);
 	UKNotNil(protocol2);
 	UKNotNil(protocol3);
+
+	// Adopted protocol related tests
+	UKObjectsEqual(adoptedProtocolNames, SA([adoptedProtocols allKeys]));
+	UKObjectsEqual(SA([adoptedProtocols allKeys]), SA((id)[[[adoptedProtocols allValues] mappedCollection] name]));
+
 
 	UKFalse([protocol1 isForwardDeclaration]);
 	UKTrue([protocol2 isForwardDeclaration]);
@@ -196,16 +209,23 @@ static SCKSourceCollection *sourceCollection = nil;
 	UKTrue([[date declaration] offset] > [[string declaration] offset]);
 }
 
+ // NOTE: libclang versions prior to 21 parses all protocol properties as required.
 - (void)testCategory
 {
 	SCKClass *classA = [self parsedClassForName: @"A"];
 	SCKClass *classB = [self parsedClassForName: @"B"];
 	NSMutableDictionary *categories = [classA categories];
+	NSMutableDictionary *adoptedProtocols = [[[categories allValues] objectAtIndex: 0] adoptedProtocols];
+	NSSet *adoptedProtocolNames = S(@"Protocol4", @"Protocol5");
 	SCKCategory *aExtension = [categories objectForKey: @"AExtension"];
 	
 	UKNotNil(aExtension);
 	UKStringsEqual(@"AExtension", [aExtension name]);
 	UKStringsEqual(@"A", [[aExtension parent] name]);
+
+	// Adopted protocol related tests
+	UKObjectsEqual(adoptedProtocolNames, SA([adoptedProtocols allKeys]));
+	UKObjectsEqual(SA([adoptedProtocols allKeys]), SA((id)[[[adoptedProtocols allValues] mappedCollection] name]));
 
 	UKStringsEqual(@"AB.h", [[[aExtension declaration] file] lastPathComponent]);
 	UKTrue([[classA declaration] offset] < [[aExtension declaration] offset]);
@@ -223,7 +243,7 @@ static SCKSourceCollection *sourceCollection = nil;
 	SCKCategory *aExtension = [categories objectForKey: @"AExtension"];
 	NSMutableDictionary *methods = [aExtension methods];
 	NSSet *methodNames = S(@"propertyInsideCategory",
-		@"setPropertyInsideCategory:", @"methodInCategory");
+		@"setPropertyInsideCategory:", @"methodInCategory", @"haveHotChocolate", @"haveMilkshake");
 
 	UKObjectsEqual(methodNames, SA([methods allKeys]));
 	UKObjectsEqual(SA([methods allKeys]), SA((id)[[[methods allValues] mappedCollection] name]));
@@ -279,7 +299,7 @@ static SCKSourceCollection *sourceCollection = nil;
 	NSMutableDictionary *methods = [classA methods];
 	NSSet *methodNames = S(@"text", @"setText:", @"wakeUpAtDate:",
 		@"sleepLater:", @"sleepNow", @"propertyInsideCategory",
-		@"setPropertyInsideCategory:", @"methodInCategory");
+		@"setPropertyInsideCategory:", @"methodInCategory", @"haveHotChocolate", @"haveMilkshake");
 
 	UKObjectsEqual(methodNames, SA([methods allKeys]));
 	UKObjectsEqual(SA([methods allKeys]), SA((id)[[[methods allValues] mappedCollection] name]));

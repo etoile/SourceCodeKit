@@ -66,6 +66,7 @@
 @property (nonatomic, readonly, retain) NSMutableArray *subclasses;
 @property (nonatomic, readonly, retain) NSMutableDictionary *categories;
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
+@property (nonatomic, readonly, retain) NSMutableDictionary *adoptedProtocols;
 @property (nonatomic, readonly, retain) NSMutableArray *ivars;
 @property (nonatomic, readonly, retain) NSMutableArray *properties;
 - (SCKIvar*)ivarForName: (NSString *)name;
@@ -78,6 +79,7 @@
 @property (nonatomic, readonly, retain) NSMutableDictionary *optionalMethods;
 @property (nonatomic, readonly, retain) NSMutableArray *requiredProperties;
 @property (nonatomic, readonly, retain) NSMutableArray *optionalProperties;
+@property (nonatomic, readonly, retain) NSMutableDictionary *adoptedProtocols;
 - (SCKProperty*)requiredPropertyForName: (NSString *)aProperty;
 - (SCKProperty*)optionalPropertyForName: (NSString *)aProperty;
 @end
@@ -85,6 +87,7 @@
 @interface SCKCategory : SCKProgramComponent
 @property (nonatomic, readonly, retain) NSMutableDictionary *methods;
 @property (nonatomic, readonly, retain) NSMutableArray *properties;
+@property (nonatomic, readonly, retain) NSMutableDictionary *adoptedProtocols;
 - (SCKProperty*)propertyForName: (NSString *)aProperty;
 @end
 
