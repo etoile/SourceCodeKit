@@ -1,3 +1,11 @@
+/**
+	Copyright (c) 2010-2012 David Chisnall
+	Copyright (c) 2012 Nicolas Roard
+	Copyright (c) 2012-2014 Quentin Mathe
+
+	License:  MIT  (see COPYING)
+ */
+
 #import <Foundation/NSObject.h>
 
 @class NSCache, NSDictionary, NSMutableDictionary, NSArray;

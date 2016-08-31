@@ -1,3 +1,9 @@
+/**
+	Copyright (c) 2013 Quentin Mathe
+
+	License:  MIT  (see COPYING)
+ */
+
 #import "TestCommon.h"
 
 @implementation TestCommon

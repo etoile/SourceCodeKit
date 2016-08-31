@@ -1,3 +1,11 @@
+/**
+	Copyright (c) 2010-2012 David Chisnall
+	Copyright (c) 2012-2013 Quentin Mathe
+	Copyright (c) 2012 Nicolas Roard
+	
+	License:  MIT  (see COPYING)
+ */
+
 #include <Foundation/Foundation.h>
 #include "SCKSourceFile.h"
 #include <clang-c/Index.h>

@@ -1,3 +1,9 @@
+/**
+	Copyright (c) 2013-2014 Quentin Mathe
+
+	License:  MIT  (see COPYING)
+ */
+
 #import <Foundation/NSObject.h>
 
 @class NSString, NSDate, NSButton;

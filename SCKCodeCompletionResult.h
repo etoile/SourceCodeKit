@@ -1,3 +1,9 @@
+/**
+	Copyright (c) 2011 David Chisnall
+
+	License:  MIT  (see COPYING)
+ */
+
 #import <Foundation/Foundation.h>
 
 @interface SCKCodeCompletionResult : NSObject

@@ -1,3 +1,10 @@
+/**
+	Copyright (c) 2012-2013 Quentin Mathe
+	Copyright (c) 2012 David Chisnall
+	
+	License:  MIT  (see COPYING)
+ */
+
 #import "SCKProject.h"
 #import "SCKSourceFile.h"
 #import "SCKSourceCollection.h"

@@ -1,3 +1,9 @@
+/**
+	Copyright (c) 2014 Quentin Mathe
+
+	License:  MIT  (see COPYING)
+ */
+
 #import "TestCommon.h"
 
 @interface TestRuntimeParsing : TestCommon

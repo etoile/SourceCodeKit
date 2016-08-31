@@ -1,3 +1,9 @@
+/**
+	Copyright (c) 2012-2013 Quentin Mathe
+
+	License:  MIT  (see COPYING)
+ */
+
 #import <Foundation/Foundation.h>
 #import <EtoileFoundation/EtoileFoundation.h>
 
