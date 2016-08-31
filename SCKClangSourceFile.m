@@ -1,3 +1,14 @@
+/**
+	Copyright (c) 2010-2013 David Chisnall
+	Copyright (c) 2011 Niels Grewe
+	Copyright (c) 2011 Nicolas Roard
+	Copyright (c) 2012-2014 Quentin Mathe
+	Copyright (c) 2014 Alessandro Sangiuliano
+
+	License:  MIT  (see COPYING)
+
+ */
+
 #import "SCKClangSourceFile.h"
 #import "SourceCodeKit.h"
 #import <Cocoa/Cocoa.h>

@@ -1,3 +1,11 @@
+/**
+	Copyright (c) 2010-2012 David Chisnall
+	Copyright (c) 2012 Nicolas Roard
+	Copyright (c) 2013-2014 Quentin Mathe
+
+	License:  MIT  (see COPYING)
+ */
+
 #import "SCKIntrospection.h"
 #import "SCKClangSourceFile.h"
 #import <EtoileFoundation/EtoileFoundation.h>

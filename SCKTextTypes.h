@@ -1,3 +1,9 @@
+/**
+	Copyright (c) 2010 David Chisnall
+
+	License:  MIT  (see COPYING)
+ */
+
 #import <EtoileFoundation/Macros.h>
 
 @class NSString;

@@ -1,3 +1,9 @@
+/**
+	Copyright (c) 2013-2014 Quentin Mathe
+
+	License:  MIT  (see COPYING)
+ */
+
 #import "TestCommon.h"
 #import "SCKClangSourceFile.h"
 #import "SCKIntrospection.h"
